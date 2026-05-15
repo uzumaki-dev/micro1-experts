@@ -1,0 +1,38 @@
+# --- Markdown ---------------------------------------------------------------
+# No markdown files are committed (includes CLAUDE.md, README.md, DEEP_DIVE.md,
+# notes.md). Exception: the gold-sample reference folder is committed in full.
+*.md
+!gold-sample-aspen-main/**
+
+# --- Python ------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# --- Secrets & environment ---------------------------------------------------
+.env
+.env.*
+*.local
+
+# --- Task / agent artifacts --------------------------------------------------
+answer.diff
+logs/
+reward.json
+reward.txt
+
+# --- OS ----------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+
+# --- Editors / IDEs ----------------------------------------------------------
+.idea/
+.vscode/
+*.swp
+*~
