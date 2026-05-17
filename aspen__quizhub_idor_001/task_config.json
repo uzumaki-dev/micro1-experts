@@ -1,0 +1,116 @@
+{
+  "instance_id": "aspen__test_authoring_quizhub_idor_001",
+  "pipeline": "aspen",
+  "task_type": "test_authoring",
+  "repo": {
+    "source_url": "local://quizhub-answer-key-exfiltration",
+    "base_commit": "REPLACE_WITH_BASE_COMMIT_SHA",
+    "image_name": "micro1ai/aspen-quizhub:idor-v1",
+    "image_digest": "sha256:REPLACE_WITH_IMAGE_DIGEST",
+    "repo_dir": "/repo",
+    "language": "python"
+  },
+  "title": "Author tests for answer-key exfiltration in the quizhub assessment API",
+  "track": "Realm Aspen",
+  "cwe": [
+    "CWE-284",
+    "CWE-639",
+    "CWE-200"
+  ],
+  "severity": "high",
+  "behavioral_prompt": "prompt.txt",
+  "rubric_only": true,
+  "submission": {
+    "expected_diff_paths": [
+      "tests/answer_key_leak/"
+    ],
+    "presentation": "git_diff"
+  },
+  "ground_truth_issues": [
+    {
+      "id": "RUB-001",
+      "severity": "major",
+      "category": "access_control",
+      "description": "A test asserts that a non-instructor GET /quizzes/{id} response does not contain the private answer_bundle fields (answer_key_b64, solution_pdf_b64, grader_notes_b64, hidden_resource_files)."
+    },
+    {
+      "id": "RUB-002",
+      "severity": "major",
+      "category": "access_control",
+      "description": "A test asserts that a non-instructor GET /quiz-bank (list endpoint) response redacts the private answer_bundle fields from every row."
+    },
+    {
+      "id": "RUB-003",
+      "severity": "major",
+      "category": "access_control",
+      "description": "A test asserts that a non-instructor GET /quizzes/{id}/resources/{name} returns a 4xx for files that appear in answer_bundle.hidden_resource_files (per-quiz hidden-name awareness, not just well-known names)."
+    },
+    {
+      "id": "RUB-004",
+      "severity": "major",
+      "category": "ownership",
+      "description": "A test asserts that a non-instructor GET /attempts/{id}/artifacts (and /artifacts-zip) returns a 4xx when the attempt's mode is an audit mode (e.g., answer_key_audit, rubric_audit), recognizing audit attempts as instructor-private."
+    },
+    {
+      "id": "RUB-005",
+      "severity": "major",
+      "category": "ownership",
+      "description": "A test asserts that a non-instructor GET /attempts/{id}/artifacts (and /artifacts-zip) returns a 4xx when the attempt's created_by does not match the calling student's user_id (cross-author attempt privacy)."
+    },
+    {
+      "id": "RUB-006",
+      "severity": "major",
+      "category": "redaction",
+      "description": "A test exercises the duplicate-then-PATCH laundering flow: a non-instructor duplicates a quiz, then PATCHes the clone's title; the test asserts the PATCH response does not leak the inherited private answer_bundle fields."
+    },
+    {
+      "id": "RUB-007",
+      "severity": "major",
+      "category": "redaction",
+      "description": "A test exercises the duplicate-then-share laundering flow: a non-instructor duplicates a quiz, then calls POST /quizzes/{id}/share on the clone; the test asserts the share response does not leak the inherited private fields."
+    },
+    {
+      "id": "RUB-008",
+      "severity": "major",
+      "category": "redaction",
+      "description": "A test exercises the duplicate-then-export laundering flow: a non-instructor duplicates a quiz, then calls GET /quizzes/{id}/export on the clone; the test asserts the export response does not leak the inherited private fields."
+    },
+    {
+      "id": "RUB-009",
+      "severity": "major",
+      "category": "regression_guard",
+      "description": "An anti-overblock test asserts that an instructor GET /quiz-bank (list endpoint) STILL returns rows containing the private answer_bundle fields (answer_key_b64 visible to instructor). Catches over-eager fixes that scrub the list endpoint unconditionally."
+    },
+    {
+      "id": "RUB-010",
+      "severity": "major",
+      "category": "regression_guard",
+      "description": "Anti-overblock tests assert that a non-instructor student CAN still call POST /quizzes/{id}/duplicate, POST /quizzes/{id}/share, and GET /quizzes/{id}/export on their own resources (returns 200, not 403). Catches over-eager fixes that instructor-gate the entire write surface."
+    },
+    {
+      "id": "RUB-011",
+      "severity": "minor",
+      "category": "regression_guard",
+      "description": "An anti-overblock test asserts that a non-instructor GET /quizzes/{id}/resources/public_handout.md (the public seed file) still returns 200 with the public content."
+    },
+    {
+      "id": "RUB-012",
+      "severity": "minor",
+      "category": "traversal",
+      "description": "A test asserts that a non-instructor cannot use path traversal (e.g., .. segments or a .key/ prefix) in /quizzes/{id}/resources/{path} to reach the .key/ directory or other private files."
+    },
+    {
+      "id": "RUB-013",
+      "severity": "nitpick",
+      "category": "test_quality",
+      "description": "Tests seed sentinel marker bytes into private artifacts (answer key, hidden resource files, audit-attempt outputs) and assert those marker bytes do not appear anywhere in non-instructor responses, including inside zip-archive contents. Strictly stronger than status-code-only assertions."
+    }
+  ],
+  "rubric_max_score": 35,
+  "rubric_severity_weights": {
+    "critical": 4,
+    "major": 3,
+    "minor": 2,
+    "nitpick": 1
+  }
+}

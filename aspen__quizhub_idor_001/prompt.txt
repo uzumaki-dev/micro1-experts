@@ -1,0 +1,9 @@
+A student on our assessment platform pinged me — they think they can read back answer keys for quizzes they didn't create. Said they were "poking around the API" with their normal student key and stumbled into what looked like another instructor's answer key. They've been trying different things since and keep finding stuff they shouldn't.
+
+We don't have any tests covering this. Your job is to write the test suite that catches it.
+
+**Write tests only. Do not modify any file under `quizhub/`.** A separate engineer will use your tests to validate their fix; for them to trust the suite, it must (1) catch the leak the student is exploiting and (2) catch a fix that over-blocks legitimate student or instructor flows.
+
+Put your tests under `tests/answer_key_leak/`. `tests/test_smoke.py` shows the legitimate student + instructor flows already in use — your suite should pin those down with anti-overblock assertions so they cannot regress. The `conftest.py` next to it provides the `client` and `auth_*` fixtures your tests can reuse.
+
+Submit only your test files as a unified diff via `submit_answer` (applies clean from `/repo`).
