@@ -1,8 +1,7 @@
-# --- Markdown ---------------------------------------------------------------
-# No markdown files are committed (includes CLAUDE.md, README.md, DEEP_DIVE.md,
-# notes.md). Exception: the gold-sample reference folder is committed in full.
-*.md
-!gold-sample-aspen-main/**
+# --- Project instructions ----------------------------------------------------
+# CLAUDE.md is local authoring guidance and is not committed. All other
+# markdown (README.md, DEEP_DIVE.md, etc.) is committed normally.
+CLAUDE.md
 
 # --- Python ------------------------------------------------------------------
 __pycache__/
