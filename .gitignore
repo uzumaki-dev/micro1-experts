@@ -25,6 +25,7 @@ answer.diff
 logs/
 reward.json
 reward.txt
+notes.txt
 
 # --- OS ----------------------------------------------------------------------
 .DS_Store
