@@ -1,0 +1,112 @@
+[judge]
+judge = "claude-code"
+timeout = 600
+isolated = false
+cwd = "/repo"
+prompt_template = "prompt.md"
+
+[[criterion]]
+name = "rub_001"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-owner GET /documents/{id} of another user's private document does not expose the document body or secret_notes (e.g., returns a 4xx or a redacted response). Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_002"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-owner GET /documents (list endpoint) response does not include other users' private documents or their private fields. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_003"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-owner GET /documents/search response does not return other users' private documents (body or secret_notes) in its results. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_004"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-owner GET /documents/{id}/export with format=json does not contain the secret_notes or attachment content of a document they do not own. Category: redaction."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_005"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that the zip export (format=zip) of a non-owned private document does not contain the private bytes (secret_notes or attachment content) inside the archive, inspecting the archive contents rather than only the status code. Category: redaction."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_006"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-owner GET /documents/{id}/attachments for an attachment of a document they do not own returns a 4xx (or otherwise does not return the attachment content). Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_007"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-owner GET /documents/{id}/versions does not leak prior private content (old body or secret_notes) from the version history. Category: ownership."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_008"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-owner cannot use path-traversal segments (e.g., ..) in the attachment name to read another document's attachment. Category: traversal."
+type = "binary"
+weight = 2.0
+
+[[criterion]]
+name = "rub_009"
+description = "The agent's submitted diff satisfies this rubric item: A test exercises the duplicate-then-read laundering flow: a non-owner duplicates a document they do not own, then reads the clone, and the test asserts the clone response does not expose the inherited secret_notes. Category: redaction."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_010"
+description = "The agent's submitted diff satisfies this rubric item: A test exercises the duplicate-then-share laundering flow: after a non-owner duplicates a document, calling /documents/{id}/share on the clone does not leak the inherited private fields. Category: redaction."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_011"
+description = "The agent's submitted diff satisfies this rubric item: A test exercises the duplicate-then-export laundering flow: after a non-owner duplicates a document, exporting the clone does not leak the inherited private fields. Category: redaction."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_012"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that the owner GET /documents/{id} STILL returns the full body and secret_notes. Catches fixes that redact responses unconditionally. Category: regression_guard."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_013"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that an admin GET /documents/{id} STILL returns the full private fields for a document they do not own. Category: regression_guard."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_014"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that a user listed in a document's collaborators can STILL read that document. Category: regression_guard."
+type = "binary"
+weight = 2.0
+
+[[criterion]]
+name = "rub_015"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that a public document's body remains readable by a non-owner (200). Catches fixes that over-deny the public read surface. Category: regression_guard."
+type = "binary"
+weight = 2.0
+
+[[criterion]]
+name = "rub_016"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that a non-admin user can STILL create and list their OWN documents (the write/list surface is not admin-gated). Category: regression_guard."
+type = "binary"
+weight = 2.0
+
+[[criterion]]
+name = "rub_017"
+description = "The agent's submitted diff satisfies this rubric item: A test seeds sentinel marker bytes into a private document's secret_notes/attachment and asserts those bytes do not appear in any non-owner response, including inside the zip-archive contents. Strictly stronger than status-code-only assertions. Category: test_quality."
+type = "binary"
+weight = 1.0
+
+[scoring]
+aggregation = "weighted_mean"
+rubric_max_score = 45.0

@@ -1,0 +1,38 @@
+Threat model & why test-authoring fits
+=======================================
+
+Substrate: DocVault, an in-memory multi-tenant document workspace (FastAPI). The
+caller is identified by an X-User-Id header. Documents have an owner, optional
+collaborators, a visibility ("private"|"public"), private secret_notes, and
+attachments. Intended policy: body/secret_notes/attachments are private to the
+owner; admins and collaborators may access; a public document exposes only its
+body to anyone; listing/search return only documents the caller may see.
+
+The shipped code implements none of the object-level authorization checks. The
+same missing-authorization bug therefore surfaces on MANY endpoints:
+  - GET /documents/{id}              (direct read)
+  - GET /documents                   (list — every owner's docs)
+  - GET /documents/search            (search across all docs)
+  - GET /documents/{id}/export       (json AND zip — incl. attachment bytes)
+  - GET /documents/{id}/attachments  (download + path traversal via name)
+  - GET /documents/{id}/versions     (historical private content)
+  - POST /documents/{id}/duplicate   (clone inherits private fields -> laundering
+                                       via subsequent read / share / export)
+
+Why test-authoring (not bug-fixing): the discriminative signal is whether the
+agent DISCOVERS the full set of non-obvious leak surfaces and pins each with a
+precise assertion, while NOT over-constraining legitimate owner/admin/collaborator/
+public access. A weaker model tests the obvious GET-by-id leak and a couple of
+others; a frontier model also finds search, the zip export, version history, the
+three duplicate-laundering flows, path traversal, and uses sentinel-byte
+assertions.
+
+Dual contract: rub_001..rub_011 + rub_017 are direct-coverage (catch the leak on
+each surface); rub_012..rub_016 are anti-overblock regression guards decomposed by
+axis (owner / admin / collaborator / public / own-CRUD); rub_005 (zip bytes) and
+rub_017 (sentinel) are the strong-assertion test_quality items.
+
+Calibration intent: the wallet feature-coverage predecessor saturated both models
+(Opus 100%, Qwen 93%) because comprehensive coverage of a simple service is easy.
+This task instead rewards discovery of many non-obvious surfaces, which is the
+gold-sample-proven structure for separating frontier from weaker models.

@@ -1,0 +1,41 @@
+schema_version = "1.2"
+artifacts = []
+
+[task]
+name = "micro1/aspen__docvault_idor_001"
+description = "Author a test suite that catches broken object-level authorization (IDOR) in the DocVault document workspace: private documents leak to non-owners across read, list, search, export, attachment, version, and duplicate/share surfaces."
+authors = [{ name = "Hamzah Manzoor", email = "zeam710@expert.micro1.ai" }]
+keywords = ["test_authoring", "idor", "access_control", "security", "fastapi"]
+
+[metadata]
+source = "m1-rl-envs"
+environment_id = "aspen"
+instance_id = "aspen__docvault_idor_001"
+pipeline = "aspen"
+task_type = "test_authoring"
+rubric_only = true
+image_digest = "sha256:<set-after-upload-to-realm>"
+base_commit = "<set-after-docker-build>"
+
+[verifier]
+timeout_sec = 1800.0
+
+[verifier.env]
+ANTHROPIC_API_KEY = "${ANTHROPIC_API_KEY:-}"
+OPENAI_API_KEY = "${OPENAI_API_KEY:-}"
+
+[agent]
+timeout_sec = 3600.0
+
+[environment]
+build_timeout_sec = 3600.0
+cpus = 2
+memory_mb = 4096
+storage_mb = 10240
+gpus = 0
+allow_internet = true
+mcp_servers = []
+
+[environment.env]
+
+[solution.env]
