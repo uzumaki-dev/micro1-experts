@@ -46,6 +46,21 @@ USER user
 # Pre-warm harbor-rewardkit while build has internet; runtime is offline
 RUN uvx --python 3.13 --from 'harbor-rewardkit[all]' rewardkit --help 2>&1 || true
 
+# Pre-install the claude-code judge backend while internet is available
+RUN curl -fsSL https://claude.ai/install.sh | bash
+
+USER root
+# Stub curl for claude.ai so ensure_installed() won't fail at offline runtime:
+# the script does `curl -fsSL https://claude.ai/install.sh | bash`; our stub
+# outputs nothing + exits 0, bash runs empty input + exits 0, then
+# `claude --version` succeeds against the pre-installed binary.
+RUN mv /usr/bin/curl /usr/bin/real_curl \
+ && printf '#!/bin/sh\nif echo "$*" | grep -q "claude.ai"; then exit 0; fi\nexec /usr/bin/real_curl "$@"\n' \
+      > /usr/bin/curl \
+ && chmod +x /usr/bin/curl
+USER user
+
+ENV PATH="/home/user/.local/bin:$PATH"
 ENV PYTHONPATH=/repo
 ENV UV_OFFLINE=1
 
