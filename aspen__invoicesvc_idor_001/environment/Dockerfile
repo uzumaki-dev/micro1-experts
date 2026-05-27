@@ -43,6 +43,10 @@ RUN git init -q \
 RUN chown -R user:user /repo
 USER user
 
+# Pre-warm harbor-rewardkit while build has internet; runtime is offline
+RUN uvx --python 3.13 --from 'harbor-rewardkit[all]' rewardkit --version
+
 ENV PYTHONPATH=/repo
+ENV UV_OFFLINE=1
 
 CMD ["bash"]
