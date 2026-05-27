@@ -1,0 +1,111 @@
+[judge]
+judge = "claude-code"
+timeout = 600
+isolated = false
+cwd = "/repo"
+prompt_template = "prompt.md"
+
+[[criterion]]
+name = "rub_001"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger (non-owner, non-admin) GET /invoices/{id} response does not contain the invoice owner's private internal_notes field. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into internal_notes and verify it is absent from the response body. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_002"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that the GET /invoices list endpoint does not expose another owner's private invoice data (internal_notes or cost_code) to a stranger. A status-code-only assertion does not satisfy this item; the test must verify that a seeded sentinel string is absent from the list response body. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_003"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that the GET /invoices/search endpoint does not return another owner's private invoice content to a stranger. A status-code-only assertion does not satisfy this item; the test must verify that a seeded sentinel string is absent from the search response body. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_004"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /invoices/{id}/line-items response does not contain the private cost_code field from another owner's invoice. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into cost_code and verify it is absent from the line-items response. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_005"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /invoices/{id}/export?format=json does not leak the private internal_notes field of another owner's invoice. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string and verify it is absent from the JSON export response body. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_006"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /invoices/{id}/export?format=csv does not expose private sentinel data (internal_notes or cost_code) in the CSV rows. A status-code-only assertion does not satisfy this item; the test must inspect the CSV response body text for absent sentinel content. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_007"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /invoices/{id}/attachments?name=<file> does not return the private attachment content of another owner's invoice. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into an attachment value and verify it is absent from the download response. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_008"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that path traversal in the attachment name parameter (e.g., ../<other-id>/receipt.pdf) cannot be used to retrieve another invoice's private attachment content. A status-code-only assertion does not satisfy this item; the test must seed a sentinel into the target invoice's attachment and verify it is absent from the traversal response. Category: traversal."
+type = "binary"
+weight = 2.0
+
+[[criterion]]
+name = "rub_009"
+description = "The agent's submitted diff satisfies this rubric item: A test exercises the duplicate-then-PATCH laundering flow: a stranger duplicates a private invoice owned by another user, then PATCHes the clone's client_name; the test asserts the duplicate response and the PATCH response do not expose the original owner's private internal_notes sentinel. A status-code-only assertion does not satisfy this item. Category: redaction."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_010"
+description = "The agent's submitted diff satisfies this rubric item: A test exercises the duplicate-then-share laundering flow: a stranger duplicates a private invoice owned by another user, then calls POST /invoices/{id}/share on the clone; the test asserts neither the duplicate response nor the share response exposes the original owner's private internal_notes sentinel. A status-code-only assertion does not satisfy this item. Category: redaction."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_011"
+description = "The agent's submitted diff satisfies this rubric item: A test exercises the duplicate-then-export laundering flow: a stranger duplicates a private invoice owned by another user, then calls GET /invoices/{id}/export?format=json on the clone; the test asserts the export response does not expose the original owner's private internal_notes or cost_code sentinels. A status-code-only assertion does not satisfy this item. Category: redaction."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_012"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that the invoice owner GET /invoices/{id} STILL returns 200 with the private internal_notes field populated. Catches over-eager fixes that redact internal_notes for all callers including the owner. Category: regression_guard."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_013"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that an admin GET /invoices/{id} STILL returns 200 with the private internal_notes field populated. Catches over-eager fixes that scrub responses unconditionally or block admin access. Category: regression_guard."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_014"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that a user listed in an invoice's collaborators field can still GET /invoices/{id} and receive a 200 response with the invoice body readable. Catches over-eager fixes that restrict access to owner-only and exclude explicit collaborators. Category: regression_guard."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_015"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that a stranger can still GET /invoices/{id} for a public-visibility invoice and receive a 200 response with the client_name field readable. Catches over-eager fixes that block all non-owner access regardless of the invoice's visibility setting. Category: regression_guard."
+type = "binary"
+weight = 2.0
+
+[[criterion]]
+name = "rub_016"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that a non-admin user can still POST /invoices (returns 201) and GET /invoices and find their own newly created invoice in the listing. Catches over-eager fixes that restrict the write surface or filter the list so aggressively that users cannot see their own invoices. Category: regression_guard."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_017"
+description = "The agent's submitted diff satisfies this rubric item: A test seeds sentinel marker strings into a private invoice's internal_notes, line-item cost_code, and attachments, then issues requests to all stranger-accessible endpoints (GET /invoices/{id}, GET /invoices, GET /invoices/search, GET /invoices/{id}/line-items, GET /invoices/{id}/export?format=json, GET /invoices/{id}/export?format=csv) and asserts that none of the sentinel strings appear in any response. A test that only checks status codes without verifying sentinel absence does not satisfy this item. Category: test_quality."
+type = "binary"
+weight = 3.0
+
+[scoring]
+aggregation = "weighted_mean"
