@@ -4,8 +4,10 @@ ENV PIP_NO_CACHE_DIR=1 PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 
 RUN groupadd -r user && useradd -r -g user -u 1000 -m -d /home/user user \
  && apt-get update \
- && apt-get install -y --no-install-recommends git \
- && rm -rf /var/lib/apt/lists/*
+ && apt-get install -y --no-install-recommends git curl ca-certificates \
+ && rm -rf /var/lib/apt/lists/* \
+ && curl -LsSf https://astral.sh/uv/install.sh | UV_INSTALL_DIR=/usr/local/bin sh \
+ && chmod 755 /usr/local/bin/uv /usr/local/bin/uvx
 
 WORKDIR /repo
 
