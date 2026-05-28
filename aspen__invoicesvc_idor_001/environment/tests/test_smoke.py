@@ -186,3 +186,33 @@ def test_non_admin_lists_invoices(client):
     r = client.get("/invoices", headers=_h("bob"))
     assert r.status_code == 200
     assert len(r.json()) >= 1
+
+
+# --- Collaborator and public-visibility flows ---
+
+def test_collaborator_reads_shared_invoice(client):
+    """A user in the collaborators list can read the invoice."""
+    r = client.post("/invoices", json={
+        "client_name": "Partner Corp",
+        "internal_notes": "shared with partner",
+        "collaborators": ["carol"],
+        "visibility": "private",
+    }, headers=_h("alice"))
+    inv_id = r.json()["id"]
+
+    r2 = client.get(f"/invoices/{inv_id}", headers=_h("carol"))
+    assert r2.status_code == 200
+    assert "Partner Corp" in r2.text
+
+
+def test_stranger_reads_public_invoice(client):
+    """An invoice with visibility=public is readable by any authenticated user."""
+    r = client.post("/invoices", json={
+        "client_name": "Public Tender Notice",
+        "visibility": "public",
+    }, headers=_h("alice"))
+    inv_id = r.json()["id"]
+
+    r2 = client.get(f"/invoices/{inv_id}", headers=_h("mallory"))
+    assert r2.status_code == 200
+    assert "Public Tender Notice" in r2.text
