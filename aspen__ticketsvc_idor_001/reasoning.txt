@@ -1,0 +1,30 @@
+Threat model: ticketsvc is a multi-tenant support-ticket service where support agents
+annotate tickets with internal investigation notes (internal_notes) and internal
+comments (type="internal"). These fields are never intended for the ticket reporter
+or other unauthenticated-role users. The IDOR vulnerability is a missing role/ownership
+check on every read endpoint.
+
+Why test-authoring: the bug is easy to describe in one sentence ("private fields are
+returned to anyone") but hard to cover exhaustively. A naive test suite checks only
+GET /tickets/{id} and writes a 403 assertion. A thorough suite discovers that the same
+private data also leaks through list, search, JSON export, ZIP export (requiring archive
+inspection), attachment download, the separate comments endpoint, and two distinct
+laundering chains (clone→GET, clone→export). Each is a distinct testing surface that
+requires independent discovery. The discriminative signal is coverage breadth + content-
+inspection depth, not raw capability.
+
+Why IDOR over other vulnerability classes: IDOR produces many non-obvious surfaces
+naturally (any read that applies to object X applies to object Y without ownership
+checks), giving us a rich rubric without artificial complexity. The sentinel-byte
+approach (seeding known strings and asserting they don't appear in responses) produces
+robust, fix-agnostic tests: they pass whether the fix is a 403, a field redaction, or
+a filtered response — any correct mitigation is accepted.
+
+Calibration rationale: Qwen 3.5 tends to write status-code-only assertions
+(assert r.status_code == 403). The rubric criterion descriptions explicitly state
+"a status-code-only assertion does not satisfy this item" for all direct-coverage items.
+This forces content-inspection assertions to pass those criteria, which Qwen consistently
+fails to produce. The regression-guard items (rub_010–013, 015) are satisfied by any
+correct test suite (agent still sees their fields; reporter can still use their write
+surface), so Qwen passes those easily, landing at ~32% (14/44). Opus produces content-
+inspection assertions naturally and covers most surfaces, landing at ~86% (38/44).
