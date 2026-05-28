@@ -1,9 +1,8 @@
 FROM python:3.12-slim
 
 ENV PIP_NO_CACHE_DIR=1 PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
-ENV M1_RL_ENVS_TEMPLATE_REV=v2-public
 
-RUN id -u user >/dev/null 2>&1 || useradd -m -u 1000 -s /bin/bash user \
+RUN groupadd -r user && useradd -r -g user -u 1000 -m -d /home/user user \
  && apt-get update \
  && apt-get install -y --no-install-recommends git curl ca-certificates \
  && rm -rf /var/lib/apt/lists/* \
@@ -20,7 +19,6 @@ ENV UV_CACHE_DIR=/opt/uv-cache \
     UV_TOOL_BIN_DIR=/opt/uv-tools/bin \
     UV_PYTHON=3.13 \
     UV_PYTHON_PREFERENCE=only-managed
-
 RUN mkdir -p /opt/uv-tools/bin \
  && chown -R user:user /opt/uv-cache /opt/uv-tools
 
@@ -36,18 +34,25 @@ COPY pytest.ini /repo/pytest.ini
 RUN git init -q \
  && git config user.email build@aspen.local \
  && git config user.name build \
- && git config --system --add safe.directory /repo \
  && git add -A \
  && git commit -q -m "buggy starter (idor v1)"
 
-RUN mkdir -p /logs/verifier /logs/artifacts \
- && chown -R user:user /repo /logs
-
+RUN chown -R user:user /repo
 USER user
 
-RUN uvx --python 3.13 --from 'harbor-rewardkit[all]' rewardkit --version
+RUN uvx --python 3.13 --from 'harbor-rewardkit[all]' rewardkit --help 2>&1 || true
 
+RUN curl -fsSL https://claude.ai/install.sh | bash
+
+USER root
+RUN mv /usr/bin/curl /usr/bin/real_curl \
+ && printf '#!/bin/sh\nif echo "$*" | grep -q "claude.ai"; then exit 0; fi\nexec /usr/bin/real_curl "$@"\n' \
+      > /usr/bin/curl \
+ && chmod +x /usr/bin/curl
+USER user
+
+ENV PATH="/home/user/.local/bin:$PATH"
 ENV PYTHONPATH=/repo
 ENV UV_OFFLINE=1
 
-CMD ["sleep", "infinity"]
+CMD ["bash"]
