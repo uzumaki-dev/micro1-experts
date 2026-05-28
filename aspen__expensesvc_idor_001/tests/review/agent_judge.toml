@@ -1,0 +1,111 @@
+[judge]
+judge = "claude-code"
+timeout = 600
+isolated = false
+cwd = "/repo"
+prompt_template = "prompt.md"
+
+[[criterion]]
+name = "rub_001"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger (non-owner, non-admin) GET /expenses/{id} response does not contain the expense owner's private private_notes field. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into private_notes and verify it is absent from the response body. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_002"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that the GET /expenses list endpoint does not expose another owner's private expense data (private_notes or cost_code) to a stranger. A status-code-only assertion does not satisfy this item; the test must verify that a seeded sentinel string is absent from the list response body. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_003"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that the GET /expenses/search endpoint does not return another owner's private expense content to a stranger. A status-code-only assertion does not satisfy this item; the test must verify that a seeded sentinel string is absent from the search response body. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_004"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /expenses/{id}/line-items response does not contain the private cost_code field from another owner's expense. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into cost_code and verify it is absent from the line-items response. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_005"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /expenses/{id}/export?format=json does not leak the private private_notes field of another owner's expense. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string and verify it is absent from the JSON export response body. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_006"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /expenses/{id}/export?format=csv does not expose private sentinel data (private_notes or cost_code) in the CSV rows. A status-code-only assertion does not satisfy this item; the test must inspect the CSV response body text for absent sentinel content. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_007"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /expenses/{id}/receipts?name=<file> does not return the private receipt content of another owner's expense. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into a receipt value and verify it is absent from the download response. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_008"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that path traversal in the receipt name parameter (e.g., ../<other-id>/receipt.pdf) cannot be used to retrieve another expense's private receipt content. A status-code-only assertion does not satisfy this item; the test must seed a sentinel into the target expense's receipt and verify it is absent from the traversal response. Category: traversal."
+type = "binary"
+weight = 2.0
+
+[[criterion]]
+name = "rub_009"
+description = "The agent's submitted diff satisfies this rubric item: A test exercises the clone-then-PATCH laundering flow: a stranger clones a private expense owned by another user, then PATCHes the clone's merchant; the test asserts the clone response and the PATCH response do not expose the original owner's private private_notes sentinel. A status-code-only assertion does not satisfy this item. Category: redaction."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_010"
+description = "The agent's submitted diff satisfies this rubric item: A test exercises the clone-then-submit laundering flow: a stranger clones a private expense owned by another user, then calls POST /expenses/{id}/submit on the clone; the test asserts neither the clone response nor the submit response exposes the original owner's private private_notes sentinel. A status-code-only assertion does not satisfy this item. Category: redaction."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_011"
+description = "The agent's submitted diff satisfies this rubric item: A test exercises the clone-then-export laundering flow: a stranger clones a private expense owned by another user, then calls GET /expenses/{id}/export?format=json on the clone; the test asserts the export response does not expose the original owner's private private_notes or cost_code sentinels. A status-code-only assertion does not satisfy this item. Category: redaction."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_012"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that the expense owner GET /expenses/{id} STILL returns 200 with the private private_notes field populated. Catches over-eager fixes that redact private_notes for all callers including the owner. Category: regression_guard."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_013"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that an admin GET /expenses/{id} STILL returns 200 with the private private_notes field populated. Catches over-eager fixes that scrub responses unconditionally or block admin access. Category: regression_guard."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_014"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that a user listed in an expense's collaborators field can still GET /expenses/{id} and receive a 200 response with the expense body readable. Catches over-eager fixes that restrict access to owner-only and exclude explicit collaborators. Category: regression_guard."
+type = "binary"
+weight = 2.0
+
+[[criterion]]
+name = "rub_015"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that a stranger can still GET /expenses/{id} for a public-visibility expense and receive a 200 response with the merchant field readable. Catches over-eager fixes that block all non-owner access regardless of the expense's visibility setting. Category: regression_guard."
+type = "binary"
+weight = 2.0
+
+[[criterion]]
+name = "rub_016"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that a non-admin user can still POST /expenses (returns 201) and GET /expenses and find their own newly created expense in the listing. Catches over-eager fixes that restrict the write surface or filter the list so aggressively that users cannot see their own expenses. Category: regression_guard."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_017"
+description = "The agent's submitted diff satisfies this rubric item: A test seeds sentinel marker strings into a private expense's private_notes, line-item cost_code, and receipts, then issues requests to all stranger-accessible endpoints (GET /expenses/{id}, GET /expenses, GET /expenses/search, GET /expenses/{id}/line-items, GET /expenses/{id}/export?format=json, GET /expenses/{id}/export?format=csv) and asserts that none of the sentinel strings appear in any response. A test that only checks status codes without verifying sentinel absence does not satisfy this item. Category: test_quality."
+type = "binary"
+weight = 3.0
+
+[scoring]
+aggregation = "weighted_mean"
