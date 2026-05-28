@@ -55,7 +55,7 @@ weight = 3.0
 
 [[criterion]]
 name = "rub_009"
-description = "The agent's submitted diff satisfies this rubric item: A test exercises the clone-then-export flow: a non-agent calls POST /tickets/{id}/clone and then GET /tickets/{clone_id}/export; the test asserts the export response does not contain the internal_notes sentinel value inherited from the source ticket. A status-code-only assertion does not satisfy this item. Category: redaction."
+description = "The agent's submitted diff satisfies this rubric item: A test exercises the clone-then-export flow: a non-agent calls POST /tickets/{id}/clone and then GET /tickets/{clone_id}/export; the test asserts the export response does not contain any private sentinel value inherited from the source ticket (e.g., the internal_notes sentinel or the private attachment sentinel). A status-code-only assertion does not satisfy this item; the test must inspect response content. Category: redaction."
 type = "binary"
 weight = 3.0
 

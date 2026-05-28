@@ -17,6 +17,9 @@ report indicates that private data intended only for support agents is accessibl
 unauthorized callers across several endpoints.
 
 Your job is to write a test suite that catches all instances of this data exposure.
+Concretely: each test should **FAIL** when run against the current (buggy) repository —
+because the private data IS leaking — and **PASS** once the vulnerability is correctly
+fixed. A test that passes on the current buggy code is not catching anything.
 
 **Constraints**:
 - Write tests only. Do not modify any file under `ticketsvc/`.
