@@ -7,25 +7,25 @@ prompt_template = "prompt.md"
 
 [[criterion]]
 name = "rub_001"
-description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-agent GET /tickets/{id} response does not contain the internal_notes sentinel value of a ticket created by an agent. A status-code-only assertion does not satisfy this item; the test must inspect response content. Category: access_control."
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-agent GET /tickets/{id} response does not contain the internal_notes sentinel value of a ticket created by an agent. A status-code-only assertion does not satisfy this item; the test must inspect response content. Asserting that the internal_notes field equals an empty string, None, or any non-sentinel placeholder does not satisfy this item — the test must assert that the specific sentinel string seeded in the fixture is absent from the response. Category: access_control."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
 name = "rub_002"
-description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-agent GET /tickets (list) response does not contain the internal_notes sentinel value from any ticket in the listing. A status-code-only assertion does not satisfy this item; the test must inspect response content. Category: access_control."
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-agent GET /tickets (list) response does not contain the internal_notes sentinel value from any ticket in the listing. A status-code-only assertion does not satisfy this item; the test must inspect response content. Asserting that the internal_notes field equals an empty string, None, or any non-sentinel placeholder does not satisfy this item — the test must assert that the specific sentinel string is absent from the response. Category: access_control."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
 name = "rub_003"
-description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-agent GET /tickets/search response does not contain the internal_notes sentinel value in any result row. A status-code-only assertion does not satisfy this item; the test must inspect response content. Category: access_control."
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-agent GET /tickets/search response does not contain the internal_notes sentinel value in any result row. A status-code-only assertion does not satisfy this item; the test must inspect response content. Asserting that the internal_notes field equals an empty string, None, or any non-sentinel placeholder does not satisfy this item — the test must assert that the specific sentinel string is absent from the response. Category: access_control."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
 name = "rub_004"
-description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-agent GET /tickets/{id}/export?format=json response does not contain the internal_notes sentinel value. A status-code-only assertion does not satisfy this item; the test must inspect response content. Category: access_control."
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-agent GET /tickets/{id}/export?format=json response does not contain the internal_notes sentinel value. A status-code-only assertion does not satisfy this item; the test must inspect response content. Asserting that the internal_notes field equals an empty string, None, or any non-sentinel placeholder does not satisfy this item — the test must assert that the specific sentinel string is absent from the response. Category: access_control."
 type = "binary"
 weight = 3.0
 
@@ -55,52 +55,40 @@ weight = 3.0
 
 [[criterion]]
 name = "rub_009"
-description = "The agent's submitted diff satisfies this rubric item: A test exercises the clone-then-export flow: a non-agent calls POST /tickets/{id}/clone and then GET /tickets/{clone_id}/export; the test asserts the export response does not contain any private sentinel value inherited from the source ticket (e.g., the internal_notes sentinel or the private attachment sentinel). A status-code-only assertion does not satisfy this item; the test must inspect response content. Category: redaction."
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that an agent or admin GET /tickets/{id} STILL returns a response containing the internal_notes sentinel value (i.e., the field is visible to privileged callers and its actual value is returned, not scrubbed). Catches over-eager fixes that wipe internal_notes unconditionally for all callers. Category: Regression_guard."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
 name = "rub_010"
-description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that an agent or admin GET /tickets/{id} STILL returns a response containing the internal_notes value (i.e., the field is visible to privileged callers). Catches over-eager fixes that scrub internal_notes unconditionally regardless of caller role. Category: Regression_guard."
-type = "binary"
-weight = 3.0
-
-[[criterion]]
-name = "rub_011"
 description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that an agent GET /tickets/{id}/comments STILL returns comments including those with type='internal' (i.e., internal comments remain visible to agents). Catches over-eager fixes that suppress all internal comments regardless of caller role. Category: Regression_guard."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
-name = "rub_012"
-description = "The agent's submitted diff satisfies this rubric item: Anti-overblock tests assert that a reporter CAN still call POST /tickets/{id}/clone, GET /tickets/{id}/export, and POST /tickets/{id}/comments on their own ticket (each returning 200 or 201, not 403). Catches over-eager fixes that admin-gate the entire write and export surface. Category: Regression_guard."
+name = "rub_011"
+description = "The agent's submitted diff satisfies this rubric item: Anti-overblock tests assert that a reporter CAN still call at least one of the following on their own ticket without receiving a 4xx error: POST /tickets/{id}/clone (returns 201), GET /tickets/{id}/export (returns 200), or POST /tickets/{id}/comments (returns 201). Catches over-eager fixes that admin-gate the entire write and export surface. Category: Regression_guard."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
-name = "rub_013"
+name = "rub_012"
 description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that a non-agent can still successfully download a public (non-private) attachment via GET /tickets/{id}/attachments?name=<public-file> (returns 200 with content). Catches over-eager fixes that deny all attachment access to non-agents. Category: Regression_guard."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
+name = "rub_013"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a GET /tickets/{id}/attachments request with a path-traversal name (containing '..' segments, e.g. '../agent_handbook') either returns a 4xx status code or the response does not contain the global private-store sentinel value. A conditional assertion that checks the status code and response content is acceptable. Category: traversal."
+type = "binary"
+weight = 2.0
+
+[[criterion]]
 name = "rub_014"
-description = "The agent's submitted diff satisfies this rubric item: A test asserts that a GET /tickets/{id}/attachments request with a path-traversal name (containing '..' segments, e.g. '../agent_handbook') returns a 4xx status code. Category: traversal."
-type = "binary"
-weight = 2.0
-
-[[criterion]]
-name = "rub_015"
-description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that a non-agent can read their own ticket's description field (the public description body) via GET /tickets/{id} (returns 200 and the description value is present). Catches over-eager fixes that deny all ticket reads to non-agents. Category: Regression_guard."
-type = "binary"
-weight = 2.0
-
-[[criterion]]
-name = "rub_016"
 description = "The agent's submitted diff satisfies this rubric item: The submitted tests collectively seed sentinel bytes into internal_notes, a private attachment, and an internal comment body, and then assert that none of those sentinel bytes appear in any non-agent response across all leak surfaces (GET /tickets/{id}, GET /tickets, GET /tickets/search, GET /tickets/{id}/export, GET /tickets/{id}/comments), including inside zip archive contents. Category: test_quality."
 type = "binary"
 weight = 1.0
 
 [scoring]
 aggregation = "weighted_mean"
-rubric_max_score = 44.0
+rubric_max_score = 39.0
