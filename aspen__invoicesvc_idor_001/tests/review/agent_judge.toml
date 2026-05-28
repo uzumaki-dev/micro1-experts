@@ -31,19 +31,19 @@ weight = 3.0
 
 [[criterion]]
 name = "rub_005"
-description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /invoices/{id}/export?format=json does not leak the private internal_notes field of another owner's invoice. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string and verify it is absent from the JSON export response body. Category: access_control."
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /invoices/{id}/export?format=json does not leak the private internal_notes field of another owner's invoice. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string and verify it is absent from the JSON export response body. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
 name = "rub_006"
-description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /invoices/{id}/export?format=csv does not expose private sentinel data (internal_notes or cost_code) in the CSV rows. A status-code-only assertion does not satisfy this item; the test must inspect the CSV response body text for absent sentinel content. Category: access_control."
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /invoices/{id}/export?format=csv does not expose private sentinel data (internal_notes or cost_code) in the CSV rows. A status-code-only assertion does not satisfy this item; the test must inspect the CSV response body text for absent sentinel content. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
 name = "rub_007"
-description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /invoices/{id}/attachments?name=<file> does not return the private attachment content of another owner's invoice. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into an attachment value and verify it is absent from the download response. Category: access_control."
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /invoices/{id}/attachments?name=<file> does not return the private attachment content of another owner's invoice. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into an attachment value and verify it is absent from the download response. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
 type = "binary"
 weight = 3.0
 
