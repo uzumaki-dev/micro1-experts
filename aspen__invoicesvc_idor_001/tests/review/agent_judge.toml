@@ -7,7 +7,7 @@ prompt_template = "prompt.md"
 
 [[criterion]]
 name = "rub_001"
-description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger (non-owner, non-admin) GET /invoices/{id} response does not contain the invoice owner's private internal_notes field. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into internal_notes and verify it is absent from the response body. Category: access_control."
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger (non-owner, non-admin) GET /invoices/{id} response does not contain the invoice owner's private internal_notes field. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into internal_notes and verify it is absent from the response body. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
 type = "binary"
 weight = 3.0
 
@@ -25,7 +25,7 @@ weight = 3.0
 
 [[criterion]]
 name = "rub_004"
-description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /invoices/{id}/line-items response does not contain the private cost_code field from another owner's invoice. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into cost_code and verify it is absent from the line-items response. Category: access_control."
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /invoices/{id}/line-items response does not contain the private cost_code field from another owner's invoice. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into cost_code and verify it is absent from the line-items response. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
 type = "binary"
 weight = 3.0
 

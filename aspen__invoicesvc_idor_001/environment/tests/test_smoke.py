@@ -169,6 +169,7 @@ def test_admin_reads_any_invoice(client):
 
     r2 = client.get(f"/invoices/{inv_id}", headers=_h("admin"))
     assert r2.status_code == 200
+    assert r2.json()["internal_notes"] == "private deal notes"
 
 
 # --- Non-admin creating and listing own invoices ---
