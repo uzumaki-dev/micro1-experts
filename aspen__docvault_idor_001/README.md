@@ -7,41 +7,51 @@ surfaces (direct read, list, search, json/zip export, attachment download + path
 traversal, version history, and duplicate→read/share/export laundering). The agent
 writes a pytest suite that catches the exposure on each surface without over-blocking
 legitimate owner/admin/collaborator/public access. Graded by an LLM judge against a
-17-item rubric (weights sum 45).
+17-item rubric (weights sum 47).
 
 ## Calibration Results
 
+Calibrated 2026-05-27 after sentinel-inspection hardening on rub_001/003/004/006/007/008
+and rub_017 weight promotion (1→3). Qwen uses near-deterministic inference on the Realm
+platform — all four runs produce the same score.
+
 | Model | Run 1 | Run 2 | Run 3 | Run 4 | Mean |
 |-------|-------|-------|-------|-------|------|
-| Claude Opus 4.7 | - | - | - | - | - |
-| Qwen3.5 397B | - | - | - | - | - |
+| Claude Opus 4.7 | 87.2% | — | — | — | 87.2% |
+| Qwen3.5 397B | 31.9% | 31.9% | 31.9% | 31.9% | 31.9% |
+
+Raw scores: Opus 41/47 pts, Qwen 15/47 pts. Oracle: 1.0 (sentinel assertions, unaffected).
 
 ### Per-Rubric Catch Rates
+
 | Criterion | Opus 4.7 | Qwen3.5 |
 |-----------|----------|---------|
-| rub_001 (read) | - | - |
-| rub_002 (list) | - | - |
-| rub_003 (search) | - | - |
-| rub_004 (export json) | - | - |
-| rub_005 (export zip) | - | - |
-| rub_006 (attachment) | - | - |
-| rub_007 (versions) | - | - |
-| rub_008 (traversal) | - | - |
-| rub_009 (dup-read) | - | - |
-| rub_010 (dup-share) | - | - |
-| rub_011 (dup-export) | - | - |
-| rub_012 (owner) | - | - |
-| rub_013 (admin) | - | - |
-| rub_014 (collaborator) | - | - |
-| rub_015 (public) | - | - |
-| rub_016 (own-CRUD) | - | - |
-| rub_017 (sentinel) | - | - |
+| rub_001 (read — sentinel req.) | ✓ | ✗ |
+| rub_002 (list) | ✓ | ✓ |
+| rub_003 (search — sentinel req.) | ✓ | ✗ |
+| rub_004 (export json — sentinel req.) | ✓ | ✗ |
+| rub_005 (export zip — content inspection) | ✓ | ✗ |
+| rub_006 (attachment — sentinel req.) | ✓ | ✗ |
+| rub_007 (versions — sentinel req.) | ✓ | ✗ |
+| rub_008 (traversal — sentinel req.) | ✓ | ✗ |
+| rub_009 (dup-read laundering) | ✗ | ✗ |
+| rub_010 (dup-share laundering) | ✗ | ✗ |
+| rub_011 (dup-export laundering) | ✓ | ✗ |
+| rub_012 (owner guard) | ✓ | ✓ |
+| rub_013 (admin guard) | ✓ | ✓ |
+| rub_014 (collaborator guard) | ✓ | ✓ |
+| rub_015 (public guard) | ✓ | ✓ |
+| rub_016 (own-CRUD guard) | ✓ | ✓ |
+| rub_017 (sentinel sweep — w=3) | ✓ | ✗ |
 
 ## Discrimination Verdict
-**PENDING CALIBRATION**
 
-Designed to fix the predecessor's saturation (wallet feature-coverage: Opus 100%,
-Qwen 93%). Target: Opus ≥80%, Qwen 25-50%. The discriminative weight sits in the
-non-obvious surfaces (search, zip bytes, versions, the three laundering flows,
-traversal, sentinel). If Qwen still lands >50%, harden/extend those; if Opus <80%,
-check the prompt and rubric distribution.
+**DISCRIMINATIVE**
+
+- Opus 4.7: 87.2% ✓ (target ≥80%)
+- Qwen 3.5 397B: 31.9% ✓ (target 25–50%)
+
+The gap is driven by the six sentinel-inspection items plus the sentinel sweep (rub_017)
+and the two laundering flows (rub_009/010). Qwen writes status-code-only assertions and
+misses non-obvious surfaces; Opus naturally uses content-inspection and covers more routes
+but misses the dup-read and dup-share laundering surfaces.
