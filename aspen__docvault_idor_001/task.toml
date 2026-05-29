@@ -15,7 +15,7 @@ pipeline = "aspen"
 task_type = "test_authoring"
 rubric_only = true
 image_digest = "sha256:<set-after-upload-to-realm>"
-base_commit = "<set-after-docker-build>"
+base_commit = "2e7132053e0d6236eb8e3a90a1da8faf8c4b047a"
 
 [verifier]
 timeout_sec = 1800.0
