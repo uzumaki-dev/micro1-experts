@@ -24,8 +24,10 @@ Oracle: 1.0 (sentinel assertions, unaffected by rubric tightening).
 
 ### Per-Rubric Catch Rates
 
-| Criterion | Opus 4.7 | Qwen3.5 |
-|-----------|----------|---------|
+Opus column from the 87.2% run (95bc3c4d); Qwen is deterministic — all 4 runs identical.
+
+| Criterion | Opus 4.7 | Qwen 3.5 |
+|-----------|----------|----------|
 | rub_001 (read — sentinel req.) | ✓ | ✗ |
 | rub_002 (list) | ✓ | ✓ |
 | rub_003 (search — sentinel req.) | ✓ | ✗ |
@@ -34,9 +36,9 @@ Oracle: 1.0 (sentinel assertions, unaffected by rubric tightening).
 | rub_006 (attachment — sentinel req.) | ✓ | ✗ |
 | rub_007 (versions — sentinel req.) | ✓ | ✗ |
 | rub_008 (traversal — sentinel req.) | ✓ | ✗ |
-| rub_009 (dup-read laundering) | ✗ | ✗ |
+| rub_009 (dup-read laundering) | ✓ | ✗ |
 | rub_010 (dup-share laundering) | ✗ | ✗ |
-| rub_011 (dup-export laundering) | ✓ | ✗ |
+| rub_011 (dup-export laundering) | ✗ | ✗ |
 | rub_012 (owner guard) | ✓ | ✓ |
 | rub_013 (admin guard) | ✓ | ✓ |
 | rub_014 (collaborator guard) | ✓ | ✓ |
@@ -52,6 +54,7 @@ Oracle: 1.0 (sentinel assertions, unaffected by rubric tightening).
 - Qwen 3.5 397B: 31.9% mean across 4 runs ✓ (target 25–50%)
 
 The gap is driven by the six sentinel-inspection items plus the sentinel sweep (rub_017)
-and the two laundering flows (rub_009/010). Qwen writes status-code-only assertions and
-misses non-obvious surfaces; Opus naturally uses content-inspection and covers more routes
-but misses the dup-read and dup-share laundering surfaces.
+and the two laundering flows (rub_010/011). Qwen writes status-code-only assertions and
+misses every surface that requires content inspection; Opus uses sentinel-based assertions
+and covers all direct-access surfaces but misses the dup-share and dup-export laundering
+chains (rub_010/011 fail across runs, accounting for the variance from 74.5% to 87.2%).
