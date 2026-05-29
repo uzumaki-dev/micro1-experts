@@ -13,14 +13,14 @@ legitimate owner/admin/collaborator/public access. Graded by an LLM judge agains
 
 Calibrated 2026-05-27 after sentinel-inspection hardening on rub_001/003/004/006/007/008
 and rub_017 weight promotion (1→3). Qwen uses near-deterministic inference on the Realm
-platform — all four runs produce the same score.
+platform — all four runs produce the same score. Opus shows natural run-to-run variance.
 
 | Model | Run 1 | Run 2 | Run 3 | Run 4 | Mean |
 |-------|-------|-------|-------|-------|------|
-| Claude Opus 4.7 | 87.2% | — | — | — | 87.2% |
-| Qwen3.5 397B | 31.9% | 31.9% | 31.9% | 31.9% | 31.9% |
+| Claude Opus 4.7 | 74.5% | 80.9% | 87.2% | — | 80.9% |
+| Qwen 3.5 397B | 31.9% | 31.9% | 31.9% | 31.9% | 31.9% |
 
-Raw scores: Opus 41/47 pts, Qwen 15/47 pts. Oracle: 1.0 (sentinel assertions, unaffected).
+Oracle: 1.0 (sentinel assertions, unaffected by rubric tightening).
 
 ### Per-Rubric Catch Rates
 
@@ -48,8 +48,8 @@ Raw scores: Opus 41/47 pts, Qwen 15/47 pts. Oracle: 1.0 (sentinel assertions, un
 
 **DISCRIMINATIVE**
 
-- Opus 4.7: 87.2% ✓ (target ≥80%)
-- Qwen 3.5 397B: 31.9% ✓ (target 25–50%)
+- Opus 4.7: 80.9% mean across 3 runs ✓ (target ≥80%)
+- Qwen 3.5 397B: 31.9% mean across 4 runs ✓ (target 25–50%)
 
 The gap is driven by the six sentinel-inspection items plus the sentinel sweep (rub_017)
 and the two laundering flows (rub_009/010). Qwen writes status-code-only assertions and
