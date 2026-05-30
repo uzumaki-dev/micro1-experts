@@ -50,8 +50,3 @@ new file mode 100644
 An agent-as-judge will compare your submitted diff against a hidden rubric of
 ground-truth issues — for each rubric item it asks: *would the test described
 by this diff catch this specific issue?*
-
-Strong suites include both focused per-endpoint isolation tests and at least one
-comprehensive test that seeds sentinel values into multiple private fields and
-validates their absence across every stranger-accessible endpoint in a single
-pass.
