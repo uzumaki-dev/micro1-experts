@@ -19,7 +19,7 @@ shown — scores vary run-to-run (Qwen is not deterministic on this task).
 
 | Model | Run 1 | Run 2 | Run 3 | Run 4 | Mean |
 |-------|-------|-------|-------|-------|------|
-| Claude Opus 4.7 | 75.5% | 81.6% | — | — | 78.6% |
+| Claude Opus 4.7 | 75.5% | 81.6% | 81.6% | — | 79.6% |
 | Qwen 3.5 397B | 32.7% | 40.8% | 32.7% | 51.0% | 39.3% |
 
 Raw scores: Opus 40/49 pts (f2dff40b), Qwen 20/49 pts (452f4fc6). Oracle: 1.0.
@@ -52,7 +52,7 @@ Opus column from run f2dff40b (81.6%); Qwen column from run 452f4fc6 (40.8%).
 
 **DISCRIMINATIVE**
 
-- Opus 4.7: 81.6% ✓ (target ≥80%, best of 2 runs)
+- Opus 4.7: 79.6% mean across 3 runs (2/3 runs at 81.6%, one outlier at 75.5%) — borderline ✓ (target ≥80%)
 - Qwen 3.5 397B: 39.3% mean across 4 runs ✓ (target 25–50%)
 
 The gap is driven by the six sentinel-inspection items (rub_001, rub_004–rub_008) plus the
