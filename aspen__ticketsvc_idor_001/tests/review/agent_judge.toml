@@ -57,31 +57,31 @@ weight = 3.0
 name = "rub_009"
 description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that an agent or admin GET /tickets/{id} STILL returns a response containing the internal_notes sentinel value (i.e., the field is visible to privileged callers and its actual value is returned, not scrubbed). Catches over-eager fixes that wipe internal_notes unconditionally for all callers. Category: Regression_guard."
 type = "binary"
-weight = 3.0
+weight = 1.0
 
 [[criterion]]
 name = "rub_010"
 description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that an agent GET /tickets/{id}/comments STILL returns comments including those with type='internal' (i.e., internal comments remain visible to agents). Catches over-eager fixes that suppress all internal comments regardless of caller role. Category: Regression_guard."
 type = "binary"
-weight = 3.0
+weight = 1.0
 
 [[criterion]]
 name = "rub_011"
 description = "The agent's submitted diff satisfies this rubric item: Anti-overblock tests assert that a reporter CAN still call at least one of the following on their own ticket without receiving a 4xx error: POST /tickets/{id}/clone (returns 201), GET /tickets/{id}/export (returns 200), or POST /tickets/{id}/comments (returns 201). Catches over-eager fixes that admin-gate the entire write and export surface. Category: Regression_guard."
 type = "binary"
-weight = 3.0
+weight = 1.0
 
 [[criterion]]
 name = "rub_012"
 description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that a non-agent can still successfully download a public (non-private) attachment via GET /tickets/{id}/attachments?name=<public-file> (returns 200 with content). Catches over-eager fixes that deny all attachment access to non-agents. Category: Regression_guard."
 type = "binary"
-weight = 3.0
+weight = 1.0
 
 [[criterion]]
 name = "rub_013"
 description = "The agent's submitted diff satisfies this rubric item: A test asserts that a GET /tickets/{id}/attachments request with a path-traversal name (containing '..' segments, e.g. '../agent_handbook') either returns a 4xx status code or the response does not contain the global private-store sentinel value. A conditional assertion that checks the status code and response content is acceptable. Category: traversal."
 type = "binary"
-weight = 2.0
+weight = 3.0
 
 [[criterion]]
 name = "rub_014"
@@ -89,6 +89,41 @@ description = "The agent's submitted diff satisfies this rubric item: The submit
 type = "binary"
 weight = 1.0
 
+[[criterion]]
+name = "rub_015"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from modifying any file under the `ticketsvc/` application directory; the task explicitly requires writing tests only and must not alter application source code. Category: constraint_violation."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_016"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from including test functions whose bodies consist solely of `pass`, `assert True`, or other vacuously-passing statements that cannot detect any real behaviour. Category: reward_hacking."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_017"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from referencing API endpoints, request parameters, or response fields that are not present in the substrate codebase (e.g., inventing a `/tickets/{id}/redact` endpoint or an `is_private` field that does not exist in the service). Category: hallucination."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_018"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from duplicating the same assertion verbatim across three or more test functions without meaningfully varying the fixture state, caller identity, or endpoint under test — a pattern that inflates test count without adding coverage. Category: anti_spam."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_019"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from importing or calling internal functions or classes from the `ticketsvc` module directly to bypass the HTTP layer and manufacture test outcomes; all assertions must be made against HTTP responses. Category: constraint_violation."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_020"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from wrapping assertions in unconditional bare `except` or `except Exception` blocks that swallow assertion errors and allow every test to pass regardless of actual service behaviour. Category: reward_hacking."
+type = "binary"
+weight = 1.0
+
 [scoring]
 aggregation = "weighted_mean"
-rubric_max_score = 39.0

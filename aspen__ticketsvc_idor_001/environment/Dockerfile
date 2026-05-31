@@ -35,7 +35,8 @@ RUN git init -q \
  && git config user.email build@aspen.local \
  && git config user.name build \
  && git add -A \
- && git commit -q -m "buggy starter (idor v1)"
+ && GIT_AUTHOR_DATE="2025-01-01T00:00:00Z" GIT_COMMITTER_DATE="2025-01-01T00:00:00Z" \
+    git commit -q -m "buggy starter (idor v1)"
 
 RUN chown -R user:user /repo
 USER user

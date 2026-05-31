@@ -7,6 +7,15 @@ This is an Aspen **test-authoring** task. The agent was *not* asked to fix appli
 code; it was asked to write tests that would catch a hidden rubric of issues. The base
 repo is checked out at `/repo` at the task's `base_commit`.
 
+The service under test is `ticketsvc`, an in-memory multi-tenant support-ticket API (FastAPI).
+The caller is identified by the `X-User-Id` header; users whose ID starts with `agent` or equals
+`admin` are privileged agents/admins — all others are regular reporters. Tickets carry an
+`internal_notes` field (agent-only) and `type="internal"` comments (agent-only). Private
+attachments are registered with a `private=true` flag. The shipped (buggy) code does not enforce
+role-based filtering on any read, list, search, export, comments, attachment, or clone endpoint —
+all authenticated callers receive the full payload including `internal_notes`, internal comments,
+and private attachment bytes.
+
 ## Behavioral prompt the agent received
 
 ````
