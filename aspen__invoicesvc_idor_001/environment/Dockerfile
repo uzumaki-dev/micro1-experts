@@ -35,7 +35,10 @@ COPY pytest.ini /repo/pytest.ini
 
 # Anti-cheating: fresh git init, single commit, no remote.
 # Dates are pinned so the commit SHA is stable across rebuilds.
-RUN git init -q \
+# __pycache__ dirs are purged before git add so local bytecode does not affect the SHA.
+RUN find . -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null; \
+    find . -name '*.pyc' -delete 2>/dev/null; \
+    git init -q \
  && git config user.email build@aspen.local \
  && git config user.name build \
  && git add -A \
