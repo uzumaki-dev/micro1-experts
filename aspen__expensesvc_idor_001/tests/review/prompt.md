@@ -5,7 +5,12 @@ contains tests that would catch a known set of ground-truth issues.
 
 This is an Aspen **test-authoring** task. The agent was *not* asked to fix application
 code; it was asked to write tests that would catch a hidden rubric of issues. The base
-repo is checked out at `/repo` at the task's `base_commit`.
+repo is checked out at `/repo` at the task's `base_commit`. The service under test is
+`expensesvc`, an in-memory multi-tenant expense management API (FastAPI). The caller is
+identified by the `X-User-Id` header; expenses have an owner, optional collaborators, a
+`visibility` of "private" or "public", private `private_notes`, line-item `cost_code`
+fields, and receipt bytes stored as a dict. The shipped code does not enforce ownership
+checks on any read, list, search, export, line-items, or receipt endpoint.
 
 ## Behavioral prompt the agent received
 
