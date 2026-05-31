@@ -33,12 +33,14 @@ COPY expensesvc/ /repo/expensesvc/
 COPY tests/ /repo/tests/
 COPY pytest.ini /repo/pytest.ini
 
-# Anti-cheating: fresh git init, single commit, no remote
+# Anti-cheating: fresh git init, single commit, no remote.
+# Dates are pinned so the commit SHA is stable across rebuilds.
 RUN git init -q \
  && git config user.email build@aspen.local \
  && git config user.name build \
  && git add -A \
- && git commit -q -m "buggy starter (idor v1)"
+ && GIT_AUTHOR_DATE="2025-01-01T00:00:00Z" GIT_COMMITTER_DATE="2025-01-01T00:00:00Z" \
+    git commit -q -m "buggy starter (idor v1)"
 
 RUN chown -R user:user /repo
 USER user
