@@ -4,7 +4,7 @@ artifacts = []
 [task]
 name = "micro1/aspen__expensesvc_idor_001"
 description = "Author tests for expense IDOR — an expense management service leaks private expense data to any authenticated user due to missing ownership checks"
-authors = [{ name = "Hamzah Manzoor", email = "zeam710@expert.micro1.ai" }]
+authors = [{ name = "Zeeshan Amir", email = "zeam710@expert.micro1.ai" }]
 keywords = ["idor", "access-control", "expense", "test-authoring"]
 
 [metadata]
