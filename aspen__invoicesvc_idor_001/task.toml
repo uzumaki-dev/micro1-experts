@@ -4,7 +4,7 @@ artifacts = []
 [task]
 name = "micro1/aspen__invoicesvc_idor_001"
 description = "Author tests for invoice IDOR — a billing service leaks private invoice data to any authenticated user due to missing ownership checks"
-authors = [{ name = "Hamzah Manzoor", email = "zeam710@expert.micro1.ai" }]
+authors = [{ name = "Zeeshan Amir", email = "zeam710@expert.micro1.ai" }]
 keywords = ["idor", "access-control", "billing", "test-authoring"]
 
 [metadata]
@@ -15,7 +15,7 @@ pipeline = "aspen"
 task_type = "test_authoring"
 rubric_only = true
 image_digest = "sha256:FILL_AFTER_UPLOAD"
-base_commit = "d9a6d870b8c9e42b6b4fab4a6a9efdc62789a75c"
+base_commit = "155cfa4caf05a81874e5c0fa8a0cbea6b12dae37"
 
 [verifier]
 timeout_sec = 1800.0

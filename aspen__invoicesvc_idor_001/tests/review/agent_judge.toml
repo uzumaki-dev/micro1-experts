@@ -103,7 +103,7 @@ weight = 3.0
 
 [[criterion]]
 name = "rub_017"
-description = "The agent's submitted diff satisfies this rubric item: A test seeds sentinel marker strings into a private invoice's internal_notes, line-item cost_code, and attachments, then issues requests to all stranger-accessible endpoints (GET /invoices/{id}, GET /invoices, GET /invoices/search, GET /invoices/{id}/line-items, GET /invoices/{id}/export?format=json, GET /invoices/{id}/export?format=csv) and asserts that none of the sentinel strings appear in any response. A test that only checks status codes without verifying sentinel absence does not satisfy this item. Category: test_quality."
+description = "The agent's submitted diff satisfies this rubric item: The submitted tests collectively seed sentinel marker strings into a private invoice's internal_notes, line-item cost_code, and attachments, then issue requests to all stranger-accessible endpoints (GET /invoices/{id}, GET /invoices, GET /invoices/search, GET /invoices/{id}/line-items, GET /invoices/{id}/export?format=json, GET /invoices/{id}/export?format=csv), asserting that none of the sentinel strings appear in any of those responses. Tests that only check status codes without verifying sentinel absence do not satisfy this item. Category: test_quality."
 type = "binary"
 weight = 3.0
 
