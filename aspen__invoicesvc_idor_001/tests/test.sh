@@ -13,23 +13,8 @@ cleanup_and_reward() {
     if [ -f /logs/verifier/reward.json ] || [ -f /logs/verifier/reward.txt ]; then
         exit "$rc"
     fi
-    python3 - "$rc" "$TEST_LOG" <<'PY' >/logs/verifier/reward.json 2>/dev/null || \
-        echo '{"score":0.0,"error":"verifier early exit; fallback writer also failed"}' > /logs/verifier/reward.json
-import json, sys
-rc = int(sys.argv[1])
-log_path = sys.argv[2] if len(sys.argv) > 2 else ""
-tail = ""
-try:
-    with open(log_path, "r", errors="replace") as f:
-        tail = f.read()[-4000:]
-except Exception:
-    tail = ""
-json.dump({
-    "score": 0.0,
-    "error": f"verifier early-exit rc={rc} (no reward.json from rewardkit)",
-    "diagnostic_log": tail,
-}, sys.stdout)
-PY
+    # Minimal fallback — numeric-only to satisfy the platform schema.
+    echo '{"reward":0.0}' > /logs/verifier/reward.json 2>/dev/null || true
     exit "$rc"
 }
 trap cleanup_and_reward EXIT
