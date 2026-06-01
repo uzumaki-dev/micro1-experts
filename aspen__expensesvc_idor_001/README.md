@@ -20,48 +20,52 @@ endpoints, while preserving legitimate access flows.
 
 ## Calibration Results
 
-Calibrated 2026-05-31. Opus column from the 81.3% run (f147650d); Qwen 4-run average
-shown — scores vary run-to-run (Qwen is not deterministic on this task).
+Calibrated 2026-05-31. Qwen scores vary run-to-run (model is not deterministic).
+Catch rates computed from 4 Qwen runs: 3 runs at 43.8% (21/48 pts) and 1 run at 27.1%
+(13/48 pts).
 
 | Model | Run 1 | Run 2 | Run 3 | Run 4 | Mean |
 |-------|-------|-------|-------|-------|------|
-| Claude Opus 4.7 | 81.3% | — | — | — | 81.3% |
-| Qwen 3.5 397B | 43.8% | 43.8% | 27.1% | 43.8% | 39.6% |
+| Oracle (solve.sh) | 100% (5cbd119b) | — | — | — | 100% |
+| Claude Opus 4.7 | 81.3% (f147650d) | — | — | — | 81.3% |
+| Qwen 3.5 397B | 43.8% (032bc7a2) | 43.8% (40902aa1) | 27.1% (fffb71e5) | 43.8% (0c20d732) | 39.6% |
 
-Raw scores: Opus 39/48 pts (f147650d), Qwen 21/48 pts (032bc7a2). Oracle: 1.0.
+Raw scores: Opus 39/48 pts (f147650d), Qwen 21/48 pts (032bc7a2).
 
 ### Per-Rubric Catch Rates
 
-Opus column from run f147650d (81.3%); Qwen column from run 032bc7a2 (43.8%).
+Opus: 1 calibration run (f147650d). Qwen: 4 calibration runs; 3 runs at 43.8%
+(pass rub_002, rub_003, rub_008, rub_012–016), 1 run at 27.1% (passes rub_012–016 only).
 
 | Criterion | Opus 4.7 | Qwen 3.5 |
 |-----------|----------|----------|
-| rub_001 (GET /expenses/{id} — sentinel req.) | ✓ | ✗ |
-| rub_002 (list) | ✓ | ✓ |
-| rub_003 (search) | ✓ | ✓ |
-| rub_004 (line-items — sentinel req.) | ✓ | ✗ |
-| rub_005 (export json — sentinel req.) | ✓ | ✗ |
-| rub_006 (export csv — sentinel req.) | ✓ | ✗ |
-| rub_007 (receipt download — sentinel req.) | ✓ | ✗ |
-| rub_008 (path traversal — sentinel req.) | ✓ | ✓ |
-| rub_009 (clone+PATCH laundering) | ✗ | ✗ |
-| rub_010 (clone+submit laundering) | ✗ | ✗ |
-| rub_011 (clone+export laundering) | ✗ | ✗ |
-| rub_012 (owner overblock guard) | ✓ | ✓ |
-| rub_013 (admin overblock guard) | ✓ | ✓ |
-| rub_014 (collaborator overblock guard) | ✓ | ✓ |
-| rub_015 (public expense overblock guard) | ✓ | ✓ |
-| rub_016 (create+list own overblock guard) | ✓ | ✓ |
-| rub_017 (sentinel sweep — w=3) | ✓ | ✗ |
+| rub_001 (GET /expenses/{id} — sentinel check) | 100% | 0% |
+| rub_002 (list — sentinel check) | 100% | 75% |
+| rub_003 (search — sentinel check) | 100% | 75% |
+| rub_004 (line-items — sentinel check) | 100% | 0% |
+| rub_005 (export json — sentinel check) | 100% | 0% |
+| rub_006 (export csv — sentinel check) | 100% | 0% |
+| rub_007 (receipt download — sentinel check) | 100% | 0% |
+| rub_008 (path traversal — sentinel check) | 100% | 75% |
+| rub_009 (clone→PATCH laundering) | 0% | 0% |
+| rub_010 (clone→submit laundering) | 0% | 0% |
+| rub_011 (clone→export laundering) | 0% | 0% |
+| rub_012 (owner still sees own expense — guard) | 100% | 100% |
+| rub_013 (admin still sees expense — guard) | 100% | 100% |
+| rub_014 (collaborator still sees expense — guard) | 100% | 100% |
+| rub_015 (public expense accessible to stranger — guard) | 100% | 100% |
+| rub_016 (user can create + list own expenses — guard) | 100% | 100% |
+| rub_017 (sentinel sweep across all surfaces) | 100% | 0% |
 
 ## Discrimination Verdict
 
 **DISCRIMINATIVE**
 
+- Oracle: 100% ✓
 - Opus 4.7: 81.3% (1 run) ✓ (target ≥80%)
 - Qwen 3.5 397B: 39.6% mean across 4 runs ✓ (target 25–50%)
 
-The gap is driven by the five sentinel-inspection items (rub_001, rub_004–rub_007) plus
-the sentinel sweep (rub_017) — Qwen writes status-code-only assertions on these and
-fails all six. Both models miss the three laundering flows (rub_009–011), the non-obvious
-chained surfaces; these account for Opus's 9 lost points (39/48).
+The gap is driven by the five sentinel-inspection items (rub_001, rub_004–007) plus the
+sentinel sweep (rub_017) — Qwen writes status-code-only assertions on these and fails all
+six. Both models miss the three laundering flows (rub_009–011), the non-obvious chained
+surfaces; these account for Opus's 9 lost points (39/48).
