@@ -1,0 +1,117 @@
+[judge]
+judge = "claude-code"
+timeout = 600
+isolated = false
+cwd = "/repo"
+prompt_template = "prompt.md"
+
+[[criterion]]
+name = "rub_001"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-participant GET /threads/{id} response does not contain the private_content sentinel value of a thread created by a participant. A status-code-only assertion does not satisfy this item; the test must inspect response content. Asserting that the private_content field equals an empty string, None, or any non-sentinel placeholder does not satisfy this item — the test must assert that the specific sentinel string seeded in the fixture is absent from the response. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_002"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-participant GET /threads/{id}/messages response does not contain the private_content sentinel value in any message in the list. A status-code-only assertion does not satisfy this item; the test must inspect response content. Asserting that the private_content field equals an empty string, None, or any non-sentinel placeholder does not satisfy this item — the test must assert that the specific sentinel string is absent from the response. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_003"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-participant GET /threads (list) response does not contain the private_content sentinel value from any thread or message preview in the listing. A status-code-only assertion does not satisfy this item; the test must inspect response content. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_004"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-participant GET /threads/search?q= response does not contain the private_content sentinel value in any result row. A status-code-only assertion does not satisfy this item; the test must inspect response content. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_005"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-participant GET /threads/{id}/attachments?name=<private-file> response does not contain the private attachment sentinel value. A status-code-only assertion does not satisfy this item; the test must inspect response content for the sentinel string. Category: ownership."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_006"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-participant GET /threads/{id}/export?format=json response does not contain the private_content sentinel value. A status-code-only assertion does not satisfy this item; the test must inspect response content. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_007"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-participant GET /threads/{id}/export?format=zip response does not contain the private_content or private-attachment sentinel bytes inside the zip archive contents. The test must open the zip archive and inspect member bytes, not merely check the HTTP status code. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_008"
+description = "The agent's submitted diff satisfies this rubric item: A test exercises the post-then-direct-fetch flow: an admin or participant posts a message with a private_content sentinel value to a thread, and a non-participant then calls GET /messages/{message_id} directly by the message ID returned from the POST; the test asserts the GET response does not contain the private_content sentinel value. A status-code-only assertion does not satisfy this item. Category: redaction."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_009"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that an admin GET /threads/{id} STILL returns a response containing the private_content sentinel value (i.e., the field is visible to privileged callers and its actual value is returned, not scrubbed). Catches over-eager fixes that wipe private_content unconditionally for all callers. Category: Regression_guard."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_010"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that a thread participant GET /threads/{id}/messages STILL returns messages including those with a non-empty private_content sentinel value (i.e., the field is visible to participants and its actual value is returned). Catches over-eager fixes that strip private_content for all users regardless of membership. Category: Regression_guard."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_011"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that a thread participant CAN still successfully POST /threads/{id}/messages (returns 201) without receiving a 4xx error. Catches over-eager fixes that admin-gate all write surfaces. Category: Regression_guard."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_012"
+description = "The agent's submitted diff satisfies this rubric item: The submitted tests collectively seed sentinel bytes into private_content and a private attachment, and then assert that none of those sentinel bytes appear in any non-participant response across all leak surfaces (GET /threads/{id}, GET /threads/{id}/messages, GET /threads, GET /threads/search, GET /threads/{id}/export), including inside zip archive contents. Category: test_quality."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_013"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from modifying any file under the `messagesvc/` application directory; the task explicitly requires writing tests only and must not alter application source code. Category: constraint_violation."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_014"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from including test functions whose bodies consist solely of `pass`, `assert True`, or other vacuously-passing statements that cannot detect any real behaviour. Category: reward_hacking."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_015"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from referencing API endpoints, request parameters, or response fields that are not present in the substrate codebase (e.g., inventing a `/threads/{id}/redact` endpoint or a `is_private` field that does not exist in the service). Category: hallucination."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_016"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from duplicating the same assertion verbatim across three or more test functions without meaningfully varying the fixture state, caller identity, or endpoint under test — a pattern that inflates test count without adding coverage. Category: anti_spam."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_017"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from importing or calling internal functions or classes from the `messagesvc` module directly to bypass the HTTP layer and manufacture test outcomes; all assertions must be made against HTTP responses. Category: constraint_violation."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_018"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from wrapping assertions in unconditional bare `except` or `except Exception` blocks that swallow assertion errors and allow every test to pass regardless of actual service behaviour. Category: reward_hacking."
+type = "binary"
+weight = 1.0
+
+[scoring]
+aggregation = "weighted_mean"
