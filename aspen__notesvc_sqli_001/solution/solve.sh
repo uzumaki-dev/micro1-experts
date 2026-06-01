@@ -8,13 +8,13 @@ diff --git a/tests/exfiltration/test_sqli.py b/tests/exfiltration/test_sqli.py
 new file mode 100644
 --- /dev/null
 +++ b/tests/exfiltration/test_sqli.py
-@@ -0,0 +1,105 @@
+@@ -0,0 +1,106 @@
 +"""Oracle test suite for notesvc SQLi task (rub_001..rub_012).
 +
-+Direct-coverage tests assert that a non-owner user receives another user's
-+sentinel data through SQL injection. These tests FAIL on the buggy substrate
-+and PASS after a correct parameterized-query fix is applied.
-+Regression-guard tests assert legitimate flows continue to work.
++Direct-coverage tests assert that a non-owner user does NOT receive another
++user's sentinel string in their response after SQL injection. Tests FAIL on
++the buggy substrate (sentinel leaks) and PASS after a correct fix.
++Regression-guard tests assert legitimate owner flows still work.
 +"""
 +import pytest
 +from fastapi.testclient import TestClient
@@ -42,7 +42,7 @@ new file mode 100644
 +
 +
 +def _seed(client):
-+    """Create alice's private note with sentinel in title, body, and tags."""
++    """Create alice's note with sentinel seeded in title, body, and tags."""
 +    return client.post("/notes", json={
 +        "title": f"Private note {SENTINEL}",
 +        "body": f"Confidential body {SENTINEL}",
@@ -50,43 +50,44 @@ new file mode 100644
 +    }, headers=_h(OWNER)).json()
 +
 +
-+# rub_001 — q= LIKE injection, sentinel content check
-+def test_search_sqli_leaks_other_user_note(client):
++# rub_001 — q= SQLi: sentinel must be absent from attacker's raw response text
++def test_search_does_not_leak_sentinel_to_attacker(client):
 +    _seed(client)
-+    # Close the title LIKE paren, add UNION SELECT to return all notes
 +    payload = "x') UNION SELECT id,owner,title,body,tags,created_at FROM notes WHERE '1'='1' --"
 +    r = client.get("/notes/search", params={"q": payload}, headers=_h(ATTACKER))
 +    assert r.status_code == 200
-+    assert SENTINEL in r.text, "q= SQLi must leak alice's sentinel to mallory"
++    assert SENTINEL not in r.text, (
++        "q= SQLi leaked alice's sentinel to mallory — sentinel must not appear in attacker's response"
++    )
 +
 +
-+# rub_002 — tag= LIKE injection, sentinel content check
-+def test_filter_sqli_leaks_other_user_note(client):
++# rub_002 — tag= SQLi: sentinel must be absent from attacker's raw response text
++def test_filter_does_not_leak_sentinel_to_attacker(client):
 +    _seed(client)
-+    # Close the LIKE string, add UNION SELECT to return all notes
 +    payload = "x' UNION SELECT id,owner,title,body,tags,created_at FROM notes WHERE '1'='1' --"
 +    r = client.get("/notes/filter", params={"tag": payload}, headers=_h(ATTACKER))
 +    assert r.status_code == 200
-+    assert SENTINEL in r.text, "tag= SQLi must leak alice's sentinel to mallory"
++    assert SENTINEL not in r.text, (
++        "tag= SQLi leaked alice's sentinel to mallory — sentinel must not appear in attacker's response"
++    )
 +
 +
-+# rub_003 — days= UNION injection, sentinel content check
-+def test_recent_union_sqli_leaks_other_user_note(client):
++# rub_003 — days= UNION SQLi: sentinel must be absent from attacker's raw response text
++def test_recent_does_not_leak_sentinel_to_attacker(client):
 +    _seed(client)
-+    # Close the datetime() call, add UNION SELECT to return all notes
 +    payload = "7') UNION SELECT id,owner,title,body,tags,created_at FROM notes WHERE '1'='1' --"
 +    r = client.get("/notes/recent", params={"days": payload}, headers=_h(ATTACKER))
 +    assert r.status_code == 200
-+    assert SENTINEL in r.text, "days= UNION injection must leak alice's sentinel to mallory"
++    assert SENTINEL not in r.text, (
++        "days= UNION injection leaked alice's sentinel to mallory — sentinel must not appear in attacker's response"
++    )
 +
 +
-+# rub_004 — q= count-based observational check (no sentinel required)
++# rub_004 — q= count-based expansion (no sentinel required)
 +def test_search_sqli_expands_result_set(client):
 +    _seed(client)  # alice has 1 note; mallory has 0 notes
-+    # Normal GET /notes confirms mallory has no notes
 +    r_own = client.get("/notes", headers=_h(ATTACKER))
 +    assert len(r_own.json()) == 0
-+    # Injection expands mallory's search result beyond her own (zero) notes
 +    payload = "x') UNION SELECT id,owner,title,body,tags,created_at FROM notes WHERE '1'='1' --"
 +    r_injected = client.get("/notes/search", params={"q": payload}, headers=_h(ATTACKER))
 +    assert len(r_injected.json()) > 0, "Injection must expand result set beyond mallory's own notes"

@@ -7,19 +7,19 @@ prompt_template = "prompt.md"
 
 [[criterion]]
 name = "rub_001"
-description = "The agent's submitted diff satisfies this rubric item: A test injects a SQLi payload into the `q=` query parameter of GET /notes/search and asserts that another user's sentinel note content (a unique string seeded in that user's note title or body) appears in the response body. A status-code-only assertion does not satisfy this item — the test must inspect response content for the specific sentinel string. Category: access_control."
+description = "The agent's submitted diff satisfies this rubric item: A test seeds a unique sentinel string into another user's note title or body, injects a SQLi payload into the `q=` query parameter of GET /notes/search as an attacker user, and asserts that the exact sentinel string is absent from the attacker's raw response text (e.g., `assert sentinel_value not in response.text`). An assertion that only checks structured JSON fields such as the `owner` key or note `id` does NOT satisfy this item — the test must check for the verbatim sentinel string in the unparsed response body. Category: access_control."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
 name = "rub_002"
-description = "The agent's submitted diff satisfies this rubric item: A test injects a SQLi payload into the `tag=` query parameter of GET /notes/filter and asserts that another user's sentinel note content appears in the response body. A status-code-only assertion does not satisfy this item — the test must inspect response content for the specific sentinel string. Category: access_control."
+description = "The agent's submitted diff satisfies this rubric item: A test seeds a unique sentinel string into another user's note title or body, injects a SQLi payload into the `tag=` query parameter of GET /notes/filter as an attacker user, and asserts that the exact sentinel string is absent from the attacker's raw response text. An assertion that only checks structured JSON fields such as the `owner` key or note `id` does NOT satisfy this item — the test must check for the verbatim sentinel string in the unparsed response body. Category: access_control."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
 name = "rub_003"
-description = "The agent's submitted diff satisfies this rubric item: A test injects a UNION-based SQLi payload into the `days=` query parameter of GET /notes/recent and asserts that another user's sentinel note content appears in the response body. A status-code-only assertion does not satisfy this item — the test must inspect response content. Category: access_control."
+description = "The agent's submitted diff satisfies this rubric item: A test seeds a unique sentinel string into another user's note title or body, injects a UNION-based SQLi payload into the `days=` query parameter of GET /notes/recent as an attacker user, and asserts that the exact sentinel string is absent from the attacker's raw response text. An assertion that only checks structured JSON fields such as the `owner` key or note `id` does NOT satisfy this item — the test must check for the verbatim sentinel string in the unparsed response body. Category: access_control."
 type = "binary"
 weight = 3.0
 

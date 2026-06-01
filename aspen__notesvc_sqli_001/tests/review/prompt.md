@@ -36,6 +36,9 @@ The service is supposed to enforce per-user data isolation — each user should 
 own notes — but something is letting cross-user reads slip through.
 
 We don't have tests covering this. Your job is to write the test suite that catches it.
+A separate engineer will use your tests to validate their fix; for them to trust your tests,
+the suite must (1) catch the cross-user data leak and (2) verify that a fix does not
+over-block legitimate note access for the note's owner.
 
 Concretely: each test should **FAIL** when run against the current (buggy) repository —
 because the cross-user data IS leaking — and **PASS** once the vulnerability is correctly
