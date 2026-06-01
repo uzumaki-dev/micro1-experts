@@ -24,7 +24,7 @@ thread's participants list.
 
 The repository contains a private messaging service (`messagesvc`). A security
 report indicates that private message content intended only for thread participants
-is accessible to unauthorized callers across several endpoints.
+is being returned in API responses to callers who are not members of the thread.
 
 Your job is to write a test suite that catches all instances of this data exposure.
 Concretely: each test should **FAIL** when run against the current (buggy) repository —
@@ -51,17 +51,8 @@ Threads are created with an explicit `participants` list. Only participants and 
 may post new messages to a thread. The `private_content` field on messages carries
 sensitive data that should be visible only to thread participants and admins.
 
-The service exposes the following endpoints:
-
-- `POST /threads` — create a thread with participants and initial message
-- `GET /threads` — list all threads
-- `GET /threads/search?q=` — search messages
-- `GET /threads/{id}` — get thread detail (includes latest message preview)
-- `POST /threads/{id}/messages` — post a message to a thread
-- `GET /threads/{id}/messages` — list all messages in a thread
-- `GET /threads/{id}/attachments?name=` — download one attachment by name
-- `GET /threads/{id}/export?format=json|zip` — export thread
-- `GET /messages/{id}` — get a single message by ID
+Refer to `tests/test_smoke.py` to understand the API surface and how the service is
+intended to be used.
 ````
 
 ## Where the agent's submission lives
