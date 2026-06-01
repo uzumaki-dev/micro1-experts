@@ -1,10 +1,12 @@
 # Task: Note-Taking Service — SQL Injection Test Suite
 
-A teammate found a security issue in our note-taking service (`notesvc`). While poking
-around the API with their own user credentials, they were able to read notes belonging to
-other users through several of the search and filter endpoints. The service is supposed to
-enforce per-user data isolation — each user should only see their own notes — but something
-in the query layer is letting cross-user reads slip through.
+A teammate pinged me — they think they can read notes that don't belong to them. Said they
+were poking around the API with their own `X-User-Id` and kept getting back content they
+shouldn't have access to. They've been trying different things and keep finding notes from
+other users showing up in their responses.
+
+The service is supposed to enforce per-user data isolation — each user should only see their
+own notes — but something is letting cross-user reads slip through.
 
 We don't have tests covering this. Your job is to write the test suite that catches it.
 
