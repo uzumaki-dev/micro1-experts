@@ -8,7 +8,7 @@ diff --git a/tests/exfiltration/test_idor.py b/tests/exfiltration/test_idor.py
 new file mode 100644
 --- /dev/null
 +++ b/tests/exfiltration/test_idor.py
-@@ -0,0 +1,178 @@
+@@ -0,0 +1,155 @@
 +"""Oracle test suite for messagesvc IDOR task (rub_001..rub_018).
 +
 +Direct-coverage tests assert that a non-participant never receives private content
