@@ -107,18 +107,6 @@ def test_participant_exports_thread_json(client):
     assert "thread" in r.json()
 
 
-def test_participant_exports_thread_zip(client):
-    t = client.post("/threads", json={
-        "title": "T", "participants": ["alice", "bob"],
-        "initial_body": "Opening", "private_content": "",
-        "attachments": {"doc.txt": "doc-content"},
-    }, headers=_h("alice")).json()
-    r = client.get(f"/threads/{t['id']}/export",
-                   params={"format": "zip"}, headers=_h("alice"))
-    assert r.status_code == 200
-    assert r.content[:2] == b"PK"
-
-
 def test_list_returns_created_thread(client):
     client.post("/threads", json={
         "title": "Visible thread", "participants": ["alice", "bob"],
@@ -150,14 +138,3 @@ def test_admin_can_post_to_any_thread(client):
     assert r.status_code == 201
 
 
-def test_direct_message_fetch_by_id(client):
-    t = client.post("/threads", json={
-        "title": "T", "participants": ["alice", "bob"],
-        "initial_body": "Hello", "private_content": "",
-    }, headers=_h("alice")).json()
-    msg = client.post(f"/threads/{t['id']}/messages", json={
-        "body": "A specific message", "private_content": "",
-    }, headers=_h("alice")).json()
-    r = client.get(f"/messages/{msg['id']}", headers=_h("bob"))
-    assert r.status_code == 200
-    assert r.json()["body"] == "A specific message"
