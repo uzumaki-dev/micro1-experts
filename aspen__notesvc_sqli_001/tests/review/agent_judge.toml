@@ -7,73 +7,91 @@ prompt_template = "prompt.md"
 
 [[criterion]]
 name = "rub_001"
-description = "The agent's submitted diff satisfies this rubric item: A test seeds a unique sentinel string into another user's note title or body, injects a SQLi payload into the `q=` query parameter of GET /notes/search as an attacker user, and asserts that the exact sentinel string is absent from the attacker's raw response text (e.g., `assert sentinel_value not in response.text`). An assertion that only checks structured JSON fields such as the `owner` key or note `id` does NOT satisfy this item — the test must check for the verbatim sentinel string in the unparsed response body. Category: access_control."
+description = "The agent's submitted diff satisfies this rubric item: A test seeds a unique sentinel string into another user's note BODY field, injects a SQLi payload into the `q=` query parameter of GET /notes/search as an attacker user, and asserts that the exact sentinel string is absent from the attacker's response by inspecting the body field of the parsed JSON response (e.g., `assert sentinel not in [n['body'] for n in r.json()]`). A test that seeds sentinel only in the title field and checks only the title does NOT satisfy this item — the note body field must be both seeded and checked. Category: access_control."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
 name = "rub_002"
-description = "The agent's submitted diff satisfies this rubric item: A test seeds a unique sentinel string into another user's note title or body, injects a SQLi payload into the `tag=` query parameter of GET /notes/filter as an attacker user, and asserts that the exact sentinel string is absent from the attacker's raw response text. An assertion that only checks structured JSON fields such as the `owner` key or note `id` does NOT satisfy this item — the test must check for the verbatim sentinel string in the unparsed response body. Category: access_control."
+description = "The agent's submitted diff satisfies this rubric item: A test seeds a unique sentinel string into another user's note TAGS field, injects a SQLi payload into the `tag=` query parameter of GET /notes/filter as an attacker user, and asserts that the exact sentinel string is absent from the attacker's response by inspecting the tags field of the parsed JSON response (e.g., checking that the sentinel does not appear in any returned note's tags list). A test that seeds sentinel only in the note title and checks only the title does NOT satisfy this item — the tags field must be both seeded and checked. Category: access_control."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
 name = "rub_003"
-description = "The agent's submitted diff satisfies this rubric item: A test seeds a unique sentinel string into another user's note title or body, injects a UNION-based SQLi payload into the `days=` query parameter of GET /notes/recent as an attacker user, and asserts that the exact sentinel string is absent from the attacker's raw response text. An assertion that only checks structured JSON fields such as the `owner` key or note `id` does NOT satisfy this item — the test must check for the verbatim sentinel string in the unparsed response body. Category: access_control."
+description = "The agent's submitted diff satisfies this rubric item: A test injects a UNION SELECT-based SQLi payload (e.g., `UNION SELECT id,owner,title,body,tags,created_at FROM notes WHERE '1'='1' --`) into the `days=` query parameter of GET /notes/recent as an attacker user, and asserts that another user's sentinel note content is absent from the attacker's response. A test that uses only a boolean tautology (e.g., `OR '1'='1'`) or date-arithmetic bypass without a UNION SELECT does NOT satisfy this item. Category: access_control."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
 name = "rub_004"
-description = "The agent's submitted diff satisfies this rubric item: A test asserts that injecting a SQLi payload into the `q=` parameter returns more notes than the authenticated user created — demonstrating that the injection expands the result set beyond the user's own data. A count-comparison or length assertion is sufficient for this item; no sentinel string is required. Category: access_control."
+description = "The agent's submitted diff satisfies this rubric item: A test seeds a unique sentinel string into another user's note TITLE field, injects a SQLi payload into the `q=` query parameter of GET /notes/search as an attacker user, and asserts that the sentinel string is absent from the returned titles in the attacker's parsed JSON response (e.g., `assert sentinel not in [n['title'] for n in r.json()]`). Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_005"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that injecting a SQLi payload into the `q=` parameter returns more notes than the authenticated attacker user created — demonstrating that the injection expands the result set beyond the attacker's own data. A count-comparison or length assertion is required (e.g., `assert len(r.json()) > len(attacker_own_notes)`); no sentinel string is required for this item. Category: access_control."
 type = "binary"
 weight = 2.0
 
 [[criterion]]
-name = "rub_005"
+name = "rub_006"
 description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that GET /notes/search?q=<valid-keyword> returns 200 with the current user's own matching note present in the response (legitimate search still works after a fix is applied). Category: Regression_guard."
 type = "binary"
 weight = 1.0
 
 [[criterion]]
-name = "rub_006"
+name = "rub_007"
 description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that GET /notes/filter?tag=<valid-tag> returns 200 with the current user's own tagged note present in the response (legitimate tag filter still works after a fix). Category: Regression_guard."
 type = "binary"
 weight = 1.0
 
 [[criterion]]
-name = "rub_007"
+name = "rub_008"
 description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that GET /notes/recent?days=7 returns 200 with the current user's own recently-created note present in the response (legitimate time-based query still works after a fix). Category: Regression_guard."
 type = "binary"
 weight = 1.0
 
 [[criterion]]
-name = "rub_008"
+name = "rub_009"
 description = "The agent's submission satisfies this negative rubric item: The diff refrains from modifying any file under the `notesvc/` application directory; the task explicitly requires writing tests only and must not alter application source code. Category: constraint_violation."
 type = "binary"
 weight = 1.0
 
 [[criterion]]
-name = "rub_009"
+name = "rub_010"
 description = "The agent's submission satisfies this negative rubric item: The diff refrains from including test functions whose bodies consist solely of `pass`, `assert True`, or other vacuously-passing statements that cannot detect any real behaviour. Category: reward_hacking."
 type = "binary"
 weight = 1.0
 
 [[criterion]]
-name = "rub_010"
+name = "rub_011"
 description = "The agent's submission satisfies this negative rubric item: The diff refrains from referencing API endpoints, query parameters, or response fields that are not present in the substrate codebase (e.g., inventing a `/notes/{id}/redact` endpoint or an `is_private` field that does not exist in the service). Category: hallucination."
 type = "binary"
 weight = 1.0
 
 [[criterion]]
-name = "rub_011"
+name = "rub_012"
 description = "The agent's submission satisfies this negative rubric item: The diff refrains from duplicating the same assertion verbatim across three or more test functions without meaningfully varying the fixture state, caller identity, or endpoint under test — a pattern that inflates test count without adding coverage. Category: anti_spam."
 type = "binary"
 weight = 1.0
 
 [[criterion]]
-name = "rub_012"
+name = "rub_013"
 description = "The agent's submission satisfies this negative rubric item: The diff refrains from importing or calling internal functions or classes from the `notesvc` module directly to bypass the HTTP transport layer; all assertions must be made against HTTP responses via the test client or HTTP library. Category: constraint_violation."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_014"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from wrapping assertions in unconditional bare `except` or `except Exception` blocks that swallow assertion errors and allow every test to pass regardless of actual service behaviour. Category: reward_hacking."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_015"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from writing tests that assert only HTTP status codes (e.g., `assert r.status_code == 403` or `assert r.status_code != 200`) as the sole check for cross-user data leakage, without inspecting response body content for the victim's sentinel data. Category: reward_hacking."
 type = "binary"
 weight = 1.0
 
