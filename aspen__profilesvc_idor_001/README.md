@@ -11,7 +11,7 @@ owner and admin flows are not over-blocked.
 ## Substrate
 
 * **Source**: Hand-authored
-* **Commit**: FILL_AFTER_DOCKER_BUILD
+* **Commit**: a99919117f1609d350b8e5afa7ee7aea1111601b
 * **Description**: Small FastAPI service (`profilesvc`) with an in-memory store. Users own
   their profiles; the `admin` user is privileged. Profiles carry a `private_summary` field
   and experience entries with a `salary_band` field — both private. The shipped code has no
