@@ -100,14 +100,16 @@ new file mode 100644
 +    )
 +
 +
-+# rub_005 — q= count-based expansion (attacker gets more notes than they own)
-+def test_search_sqli_expands_result_set(client):
++# rub_005 — q= count-based: injection must not exceed attacker's own results
++def test_search_sqli_does_not_exceed_own_results(client):
 +    _seed(client)  # alice has 1 note; mallory has 0
-+    r_own = client.get("/notes", headers=_h(ATTACKER))
-+    assert len(r_own.json()) == 0
++    r_legit = client.get("/notes/search", params={"q": "x"}, headers=_h(ATTACKER))
++    own_count = len(r_legit.json())
 +    payload = "x') UNION SELECT id,owner,title,body,tags,created_at FROM notes WHERE '1'='1' --"
 +    r_injected = client.get("/notes/search", params={"q": payload}, headers=_h(ATTACKER))
-+    assert len(r_injected.json()) > 0, "Injection must expand result set beyond mallory's own notes"
++    assert len(r_injected.json()) <= own_count, (
++        "Injected search must not return more notes than attacker's legitimate own results"
++    )
 +
 +
 +# rub_006 — legitimate q= search regression guard

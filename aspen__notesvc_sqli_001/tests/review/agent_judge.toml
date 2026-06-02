@@ -7,31 +7,31 @@ prompt_template = "prompt.md"
 
 [[criterion]]
 name = "rub_001"
-description = "The agent's submitted diff satisfies this rubric item: A test seeds a unique sentinel string into another user's note BODY field, injects a SQLi payload into the `q=` query parameter of GET /notes/search as an attacker user, and asserts that the exact sentinel string is absent from the attacker's response by inspecting the body field of the parsed JSON response (e.g., `assert sentinel not in [n['body'] for n in r.json()]`). A test that seeds sentinel only in the title field and checks only the title does NOT satisfy this item — the note body field must be both seeded and checked. Category: access_control."
+description = "The agent's submitted diff satisfies this rubric item: A test seeds a unique sentinel string into another user's note BODY field, injects a SQLi payload into the `q=` query parameter of GET /notes/search as an attacker user, and asserts that the exact sentinel string is absent from the attacker's response by inspecting the body field of the parsed JSON response (e.g., `assert sentinel not in [n['body'] for n in r.json()]`). A test that seeds sentinel only in the title field and checks only the title does NOT satisfy this item — the note body field must be both seeded and checked. A test that asserts only owner-isolation (e.g., `assert all(n['owner'] == attacker for n in r.json())`) without explicitly referencing the sentinel string in the body field assertion does NOT satisfy this item — the sentinel value itself must appear in the check. Category: access_control."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
 name = "rub_002"
-description = "The agent's submitted diff satisfies this rubric item: A test seeds a unique sentinel string into another user's note TAGS field, injects a SQLi payload into the `tag=` query parameter of GET /notes/filter as an attacker user, and asserts that the exact sentinel string is absent from the attacker's response by inspecting the tags field of the parsed JSON response (e.g., checking that the sentinel does not appear in any returned note's tags list). A test that seeds sentinel only in the note title and checks only the title does NOT satisfy this item — the tags field must be both seeded and checked. Category: access_control."
+description = "The agent's submitted diff satisfies this rubric item: A test seeds a unique sentinel string into another user's note TAGS field, injects a SQLi payload into the `tag=` query parameter of GET /notes/filter as an attacker user, and asserts that the exact sentinel string is absent from the attacker's response by inspecting the tags field of the parsed JSON response (e.g., checking that the sentinel does not appear in any returned note's tags list). A test that seeds sentinel only in the note title and checks only the title does NOT satisfy this item — the tags field must be both seeded and checked. A test that asserts only owner-isolation (e.g., `assert all(n['owner'] == attacker for n in r.json())`) without explicitly referencing the sentinel tag string in the assertion does NOT satisfy this item. Category: access_control."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
 name = "rub_003"
-description = "The agent's submitted diff satisfies this rubric item: A test injects a UNION SELECT-based SQLi payload (e.g., `UNION SELECT id,owner,title,body,tags,created_at FROM notes WHERE '1'='1' --`) into the `days=` query parameter of GET /notes/recent as an attacker user, and asserts that another user's sentinel note content is absent from the attacker's response. A test that uses only a boolean tautology (e.g., `OR '1'='1'`) or date-arithmetic bypass without a UNION SELECT does NOT satisfy this item. Category: access_control."
+description = "The agent's submitted diff satisfies this rubric item: A test injects a UNION SELECT-based SQLi payload (e.g., `UNION SELECT id,owner,title,body,tags,created_at FROM notes WHERE '1'='1' --`) into the `days=` query parameter of GET /notes/recent as an attacker user, and asserts that another user's sentinel note content is absent from the attacker's response by explicitly inspecting the sentinel value in a named response field (e.g., `assert sentinel not in [n['body'] for n in r.json()]`). A test that uses only a boolean tautology (e.g., `OR '1'='1'`) or date-arithmetic bypass without a UNION SELECT does NOT satisfy this item. A test that asserts only owner-isolation (e.g., `assert all(n['owner'] == attacker for n in r.json())`) without explicitly referencing the victim's sentinel content in the assertion does NOT satisfy this item. Category: access_control."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
 name = "rub_004"
-description = "The agent's submitted diff satisfies this rubric item: A test seeds a unique sentinel string into another user's note TITLE field, injects a SQLi payload into the `q=` query parameter of GET /notes/search as an attacker user, and asserts that the sentinel string is absent from the returned titles in the attacker's parsed JSON response (e.g., `assert sentinel not in [n['title'] for n in r.json()]`). Category: access_control."
+description = "The agent's submitted diff satisfies this rubric item: A test seeds a unique sentinel string into another user's note TITLE field, injects a SQLi payload into the `q=` query parameter of GET /notes/search as an attacker user, and asserts that the sentinel string is absent from the returned titles in the attacker's parsed JSON response (e.g., `assert sentinel not in [n['title'] for n in r.json()]`). A test that asserts only owner-isolation (e.g., `assert all(n['owner'] == attacker for n in r.json())`) without explicitly referencing the sentinel title string in the assertion does NOT satisfy this item. Category: access_control."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
 name = "rub_005"
-description = "The agent's submitted diff satisfies this rubric item: A test asserts that injecting a SQLi payload into the `q=` parameter returns more notes than the authenticated attacker user created — demonstrating that the injection expands the result set beyond the attacker's own data. A count-comparison or length assertion is required (e.g., `assert len(r.json()) > len(attacker_own_notes)`); no sentinel string is required for this item. Category: access_control."
+description = "The agent's submitted diff satisfies this rubric item: A test seeds a unique note for a victim user, performs a legitimate GET /notes/search as the attacker to obtain the attacker's own result count, then injects a SQLi payload (e.g., `x') UNION SELECT id,owner,title,body,tags,created_at FROM notes WHERE '1'='1' --`) into the `q=` parameter as the attacker, and asserts that the injected result count does not exceed the attacker's own legitimate count (e.g., `assert len(r_injected.json()) <= len(r_legit.json())`). A test that asserts only `len(r.json()) > 0` — demonstrating the attack expands results rather than blocking it — does NOT satisfy this item. Category: access_control."
 type = "binary"
 weight = 2.0
 
@@ -79,7 +79,7 @@ weight = 1.0
 
 [[criterion]]
 name = "rub_013"
-description = "The agent's submission satisfies this negative rubric item: The diff refrains from importing or calling internal functions or classes from the `notesvc` module directly to bypass the HTTP transport layer; all assertions must be made against HTTP responses via the test client or HTTP library. Category: constraint_violation."
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from using internal functions or classes from the `notesvc` module to make security assertions — for example, querying `notesvc.db` directly to check whether a cross-user record is accessible rather than asserting against an HTTP response. Importing `notesvc.db` solely for test-fixture setup (e.g., calling `db.reset()` to clear state between tests) is permitted and does NOT violate this item. Category: constraint_violation."
 type = "binary"
 weight = 1.0
 
