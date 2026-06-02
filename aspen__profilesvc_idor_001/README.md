@@ -1,12 +1,25 @@
 # aspen__profilesvc_idor_001
 
-## Status
+## Task Summary
 
-This task rewards tests that verify private profile data (confidential HR summary notes,
-salary history in experience entries, and private documents) is not exposed to unauthorized
-callers across seven distinct read surfaces plus a fork-laundering vector. Tests must fail
-on the current buggy code and pass on a correct fix, while also asserting that legitimate
-owner and admin flows are not over-blocked.
+IDOR vulnerability in a FastAPI professional profile management service. Private
+`private_summary` (HR/recruiter notes) and `salary_band` fields inside experience entries
+leak to any authenticated caller across 7 distinct read surfaces: direct GET, list, search,
+experience endpoint, JSON export, CSV export, and document download. A path-traversal
+secondary bug and a fork-laundering vector (fork → PATCH / fork → export) are also in scope.
+
+Rubric: 20 items, total weight 47.
+- rub_001–007: direct-coverage sentinel checks across read surfaces (weight 3 each = 21 pts)
+- rub_008: path-traversal document check (weight 2)
+- rub_009: fork-then-PATCH laundering sentinel check (weight 3)
+- rub_010: public-visibility regression guard (weight 2)
+- rub_011: fork-then-export laundering sentinel check (weight 3)
+- rub_012–014: regression guard anti-overblock items (weight 3 each = 9 pts)
+- rub_015–020: negative criteria — constraint_violation, reward_hacking, hallucination,
+  anti_spam (weight 2+1+1+1+1+1 = 7 pts)
+
+All direct-coverage items (rub_001–009, rub_011) require unconditional sentinel-based
+content inspection; status-code-only assertions do not satisfy these items.
 
 ## Substrate
 
@@ -26,43 +39,61 @@ issue?
 
 ## Final Calibration Results
 
-| model | runs | rewards | mean | verdict |
-|---|---:|---|---:|---|
-| micro1/oracle | 1 | — | — | pending |
-| anthropic/claude-opus-4-7 | — | — | — | pending |
-| openrouter/qwen/qwen3.5 | — | — | — | pending |
+Calibrated 2026-06-02. Opus column from run 0cf9ab05 (87.2%). Qwen catch rates derived
+across all four runs; representative run 47230d65 (38.3%) for per-item breakdown.
 
-**Discrimination Verdict**: Pending calibration.
+| Model | Run 1 | Run 2 | Run 3 | Run 4 | Mean |
+|-------|-------|-------|-------|-------|------|
+| anthropic/claude-opus-4-7 | 87.2% (0cf9ab05) | — | — | — | 87.2% |
+| openrouter/qwen/qwen3.5-397b | 55.3% (69706dc2) | 51.1% (1769fbb8) | 46.8% (d5c1d538) | 38.3% (47230d65) | 47.9% |
 
-## Reward Details
+Raw scores: Opus 41/47 pts (0cf9ab05).
 
-Total rubric weight: 47.0 across 20 items.
+### Per-Rubric Catch Rates
 
-| Rubric | Weight | Category |
-|---|---|---|
-| rub_001 | 3.0 | access_control |
-| rub_002 | 3.0 | access_control |
-| rub_003 | 3.0 | access_control |
-| rub_004 | 3.0 | access_control |
-| rub_005 | 3.0 | access_control |
-| rub_006 | 3.0 | access_control |
-| rub_007 | 3.0 | ownership |
-| rub_008 | 2.0 | traversal |
-| rub_009 | 3.0 | redaction |
-| rub_010 | 2.0 | regression_guard |
-| rub_011 | 3.0 | redaction |
-| rub_012 | 3.0 | regression_guard |
-| rub_013 | 3.0 | regression_guard |
-| rub_014 | 3.0 | regression_guard |
-| rub_015 | 2.0 | constraint_violation (Negative) |
-| rub_016 | 1.0 | reward_hacking (Negative) |
-| rub_017 | 1.0 | hallucination (Negative) |
-| rub_018 | 1.0 | anti_spam (Negative) |
-| rub_019 | 1.0 | constraint_violation (Negative) |
-| rub_020 | 1.0 | reward_hacking (Negative) |
+Opus: 1 calibration run (0cf9ab05). Qwen: averaged across all four runs.
+
+| Criterion | Opus 4.7 | Qwen 3.5 (4 runs) |
+|-----------|----------|-------------------|
+| rub_001 (GET /{id} private_summary sentinel) | 100% | 25% |
+| rub_002 (list private_summary sentinel) | 100% | 75% |
+| rub_003 (search private_summary sentinel) | 100% | 75% |
+| rub_004 (experience salary_band sentinel) | 100% | 0% |
+| rub_005 (export json private_summary sentinel) | 100% | 0% |
+| rub_006 (export csv private_summary+salary_band sentinel) | 100% | 0% |
+| rub_007 (document download sentinel) | 100% | 0% |
+| rub_008 (path traversal sentinel) | 100% | 25% |
+| rub_009 (fork-then-PATCH laundering) | 0% | 0% |
+| rub_010 (public-visibility access — guard) | 100% | 75% |
+| rub_011 (fork-then-export laundering) | 0% | 0% |
+| rub_012 (owner sees own private_summary — guard) | 100% | 100% |
+| rub_013 (admin sees private_summary — guard) | 100% | 100% |
+| rub_014 (non-admin create+list own profile — guard) | 100% | 75% |
+| rub_015 (no profilesvc/ modifications) | 100% | 100% |
+| rub_016 (no vacuous assertions) | 100% | 100% |
+| rub_017 (no hallucinated endpoints) | 100% | 100% |
+| rub_018 (no duplicate assertion spam) | 100% | 100% |
+| rub_019 (no internal module bypass) | 100% | 100% |
+| rub_020 (no swallowed assertion errors) | 100% | 100% |
+
+## Discrimination Verdict
+
+**DISCRIMINATIVE**
+
+- Opus 4.7: 87.2% (1 run) ✓ (target ≥80%)
+- Qwen 3.5 397B: 47.9% mean across 4 runs ✓ (target 25–50%)
+
+The gap is driven by rub_004–007 (sentinel-absence checks on experience, export json, export
+csv, and document endpoints) — Qwen consistently falls back to status-code-only assertions
+on these and scores 0% across all four runs. rub_008 (path traversal) and rub_001 (direct
+GET) show partial Qwen pickup (25% each) depending on whether the run uses a combined
+`status == 403 or sentinel not in text` assertion. rub_009 and rub_011 (fork-then-PATCH and
+fork-then-export laundering) are the two items Opus also misses — Opus writes fork tests
+that check the fork response only, without chaining into a subsequent PATCH or export call.
+These two items (weight 3 each = 6 pts lost) account for Opus's 12.8% gap from 100%.
 
 ## Verdict Details
 
-- Opus score >= 80%: pending
-- All four Qwen runs in 25-50%: pending
-- Final: PENDING
+- Opus score >= 80%: yes (87.2%)
+- All four Qwen runs in 25–50%: 55.3%, 51.1%, 46.8%, 38.3% — mean 47.9% ✓
+- Final: **PASS**
