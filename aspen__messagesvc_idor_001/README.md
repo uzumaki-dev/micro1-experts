@@ -16,25 +16,26 @@ Rubric: 18 items, total weight 34.
 All direct-coverage items require sentinel-based content inspection; status-code-only
 assertions and `is None / == ""` field-absence checks do NOT satisfy rub_001–008.
 
-## Oracle
-
-| Run | Agent | Reward | Notes |
-|-----|-------|--------|-------|
-| solve.sh | oracle | — | 9 tests FAIL on buggy substrate, 3 regression guards PASS |
-
 ## Calibration Results
+
+Calibrated 2026-06-02. Opus column from run 9bbac11d (97.1%); Qwen catch rates derived
+across all 4 runs (7e404097, e894ffcf, 48d90f14, ea1b6af0).
 
 | Model | Run 1 | Run 2 | Run 3 | Run 4 | Mean |
 |-------|-------|-------|-------|-------|------|
-| Claude Opus 4.7 | 9bbac11d 97.1% | — | — | — | 97.1% |
-| Qwen 3.5 | 7e404097 58.8% | e894ffcf 32.4% | 48d90f14 29.4% | ea1b6af0 17.7% | 34.6% |
+| Oracle (solve.sh) | 100% | — | — | — | 100% |
+| Claude Opus 4.7 | 97.1% (9bbac11d) | — | — | — | 97.1% |
+| Qwen 3.5 397B | 58.8% (7e404097) | 32.4% (e894ffcf) | 29.4% (48d90f14) | 17.7% (ea1b6af0) | 34.6% |
 
-Opus target ≥ 80% ✓ · Qwen target 25–50% ✓
+Raw scores: Opus 33/34 pts (9bbac11d), Qwen mean 11.8/34 pts across 4 runs.
 
 ### Per-Rubric Catch Rates
 
-| Criterion | Opus 4.7 (1 run) | Qwen 3.5 (4 runs) |
-|-----------|-----------------|------------------|
+Opus: 1 calibration run (9bbac11d). Qwen: computed across all 4 runs; other Qwen runs show
+same item-level pattern (rub_001–008 fail, rub_013–018 pass consistently).
+
+| Criterion | Opus 4.7 | Qwen 3.5 |
+|-----------|----------|----------|
 | rub_001 (GET /threads/{id} sentinel absent) | 100% | 0% |
 | rub_002 (GET /threads/{id}/messages sentinel absent) | 100% | 0% |
 | rub_003 (GET /threads list sentinel absent) | 100% | 25% |
@@ -43,10 +44,10 @@ Opus target ≥ 80% ✓ · Qwen target 25–50% ✓
 | rub_006 (GET /threads/{id}/export?format=json sentinel absent) | 100% | 25% |
 | rub_007 (GET /threads/{id}/export?format=zip archive bytes) | 100% | 0% |
 | rub_008 (POST→GET /messages/{id} direct fetch) | 100% | 25% |
-| rub_009 (admin still sees sentinel — guard) | 0% | 75% |
-| rub_010 (participant still sees sentinel — guard) | 100% | 50% |
-| rub_011 (participant POST returns 201 — guard) | 100% | 0% |
-| rub_012 (sentinel sweep across all surfaces) | 100% | 0% |
+| rub_009 (admin still sees sentinel — guard) | ~0% | 75% |
+| rub_010 (participant still sees sentinel — guard) | ~100% | 50% |
+| rub_011 (participant POST returns 201 — guard) | ~100% | 0% |
+| rub_012 (sentinel sweep across all surfaces) | ~100% | 0% |
 | rub_013 (no messagesvc/ modifications) | 100% | 100% |
 | rub_014 (no vacuous assertions) | 100% | 100% |
 | rub_015 (no hallucinated endpoints) | 100% | 100% |
@@ -56,13 +57,14 @@ Opus target ≥ 80% ✓ · Qwen target 25–50% ✓
 
 ## Discrimination Verdict
 
-**PASS**
+**DISCRIMINATIVE**
 
-- Opus 4.7: 97.1% (1 run) — well above 80% floor; missed rub_009 (checked `/messages` endpoint for admin guard instead of `/threads/{id}`)
-- Qwen 3.5: 34.6% mean across 4 runs — within 25–50% target window
+- Oracle: 100% ✓
+- Opus 4.7: 97.1% (1 run) ✓ (target ≥ 80%)
+- Qwen 3.5 397B: 34.6% mean across 4 runs ✓ (target 25–50%)
 
-**Primary discrimination drivers:**
-- rub_001/002: Qwen consistently uses `is None / == ""` field-absence pattern instead of sentinel-string absence — explicitly disqualified by criterion text. 0% catch rate.
-- rub_005/007: Qwen skips attachments endpoint and ZIP archive inspection. 0% catch rate.
-- rub_011: Qwen POSTs messages but never asserts the 201 status code. 0% catch rate.
-- rub_012: Without attachment + zip coverage, collective sentinel sweep is never satisfied. 0% catch rate.
+The gap is driven by rub_001/002 (Qwen consistently writes `is None / == ""` field-absence
+assertions instead of sentinel-string absence checks — explicitly disqualified by criterion
+text) plus rub_005/007 (Qwen skips the attachment and ZIP surfaces entirely) and rub_011/012
+(no POST-201 guard, no collective sentinel sweep). Opus missed only rub_009 (checked
+`/threads/{id}/messages` for admin visibility instead of `/threads/{id}`).
