@@ -28,7 +28,7 @@ across all four successful runs.
 
 | Model | Run 1 | Run 2 | Run 3 | Run 4 | Mean |
 |-------|-------|-------|-------|-------|------|
-| Oracle (solve.sh) | — | — | — | — | — |
+| Oracle (solve.sh) | 100% (0a9883b6) | — | — | — | 100% |
 | Claude Opus 4.7 | 87.2% (d93fdd29) | — | — | — | 87.2% |
 | Qwen 3.5 397B | 55.3% (a3c43178) | 44.7% (61558259) | 38.3% (89725d6b) | 42.6% (c4a9edf6) | 45.2% |
 
@@ -66,7 +66,7 @@ Opus: 1 calibration run (d93fdd29). Qwen: averaged across all four runs
 
 **DISCRIMINATIVE**
 
-- Oracle: not yet run
+- Oracle: 100% ✓
 - Opus 4.7: 87.2% (1 run) ✓ (target ≥80%)
 - Qwen 3.5 397B: 45.2% mean across 4 runs ✓ (target 25–50%)
 
