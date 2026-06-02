@@ -2,50 +2,73 @@
 
 ## Task Summary
 
-An analytics reporting FastAPI service (`reportsvc`) has an IDOR vulnerability: no
-ownership checks exist on any read, list, search, export, data-points, or attachment
-endpoint. Any authenticated user can read any other user's private report — including
-sensitive `confidential_notes`, data-point `metric_code` fields, and attachment bytes.
-The `fork` endpoint additionally inherits private fields verbatim, enabling a
-laundering pattern (fork → PATCH / fork → export).
+IDOR vulnerability in a FastAPI analytics reporting service. Private `confidential_notes`
+and data-point `metric_code` fields, plus attachment bytes, leak to any authenticated
+caller across 8 distinct surfaces: direct GET, list, search, JSON export, CSV export,
+attachment download, path traversal, and fork laundering (fork→PATCH, fork→export).
 
-The agent must write a sentinel-based test suite covering 10 direct-coverage surfaces
-and 3 anti-overblock regression guards.
+Rubric: 20 items, total weight 45.
+- rub_001–007: direct-coverage sentinel checks (weight 3 each = 21 pts)
+- rub_008: path-traversal sentinel check (weight 2)
+- rub_009–010: fork laundering redaction checks (weight 3 each = 6 pts)
+- rub_011–013: Regression_guard anti-overblock items (weight 3 each = 9 pts)
+- rub_014: sentinel sweep quality item (weight 1)
+- rub_015–020: negative criteria — constraint_violation, reward_hacking, hallucination, anti_spam (weight 1 each = 6 pts)
+
+All direct-coverage items require sentinel-based content inspection; status-code-only
+assertions do not satisfy rub_001–008.
 
 ## Calibration Results
 
-Calibration pending first upload to Realm.
+Calibrated 2026-06-02. Opus column from run cc500dff (86.7%); Qwen catch rates derived
+from representative run fc2c679a (51.1%).
 
 | Model | Run 1 | Run 2 | Run 3 | Run 4 | Mean |
 |-------|-------|-------|-------|-------|------|
-| Oracle (solve.sh) | — | — | — | — | — |
-| Claude Opus 4.7 | — | — | — | — | — |
-| Qwen 3.5 397B | — | — | — | — | — |
+| Oracle (solve.sh) | 100% (acb26f0b) | — | — | — | 100% |
+| Claude Opus 4.7 | 86.7% (cc500dff) | — | — | — | 86.7% |
+| Qwen 3.5 397B | 51.1% (fc2c679a) | 46.7% (2930c349) | 46.7% (a120fae7) | 51.1% (56e07368) | 48.9% |
+
+Raw scores: Opus 39/45 pts (cc500dff), Qwen 23/45 pts (fc2c679a).
 
 ### Per-Rubric Catch Rates
 
+Opus: 1 calibration run (cc500dff). Qwen: catch rates derived across all 4 runs;
+rub_008 varied (50% catch rate); all other items were consistent across Qwen runs.
+
 | Criterion | Opus 4.7 | Qwen 3.5 |
 |-----------|----------|----------|
-| rub_001 (GET /reports/{id} — sentinel check) | — | — |
-| rub_002 (list — sentinel check) | — | — |
-| rub_003 (search — sentinel check) | — | — |
-| rub_004 (data-points — sentinel check) | — | — |
-| rub_005 (export json — sentinel check) | — | — |
-| rub_006 (export csv — sentinel check) | — | — |
-| rub_007 (attachment download — sentinel check) | — | — |
-| rub_008 (path traversal — sentinel check) | — | — |
-| rub_009 (fork→PATCH laundering) | — | — |
-| rub_010 (fork→export laundering) | — | — |
-| rub_011 (owner still sees own report — guard) | — | — |
-| rub_012 (admin still sees report — guard) | — | — |
-| rub_013 (user can create + list own reports — guard) | — | — |
-| rub_014 (sentinel sweep across all surfaces) | — | — |
-| rub_015–020 (negative criteria) | — | — |
+| rub_001 (GET /reports/{id} confidential_notes sentinel) | 100% | 0% |
+| rub_002 (list sentinel) | 100% | 100% |
+| rub_003 (search sentinel) | 100% | 100% |
+| rub_004 (data-points metric_code sentinel) | 100% | 0% |
+| rub_005 (export json sentinel) | 100% | 0% |
+| rub_006 (export csv sentinel) | 100% | 0% |
+| rub_007 (attachment download sentinel) | 100% | 0% |
+| rub_008 (path traversal sentinel) | 100% | 50% |
+| rub_009 (fork→PATCH laundering) | 0% | 0% |
+| rub_010 (fork→export laundering) | 0% | 0% |
+| rub_011 (owner still sees notes — guard) | 100% | 100% |
+| rub_012 (admin still sees notes — guard) | 100% | 100% |
+| rub_013 (user can create + list own — guard) | 100% | 100% |
+| rub_014 (sentinel sweep quality) | 100% | 0% |
+| rub_015 (no reportsvc/ modifications) | 100% | 100% |
+| rub_016 (no vacuous assertions) | 100% | 100% |
+| rub_017 (no hallucinated endpoints) | 100% | 100% |
+| rub_018 (no duplicate assertion spam) | 100% | 100% |
+| rub_019 (no internal module bypass) | 100% | 100% |
+| rub_020 (no swallowed assertion errors) | 100% | 100% |
 
 ## Discrimination Verdict
 
-Pending calibration.
+**DISCRIMINATIVE**
 
-Expected: Opus ≥ 80%, Qwen 25–50% based on invoicesvc/expensesvc IDOR pattern.
-Key discriminators: rub_001 / rub_004–007 (sentinel-inspection items Qwen typically
-writes as status-code-only), rub_009–010 (laundering flows both models miss).
+- Oracle: 100% ✓
+- Opus 4.7: 86.7% (1 run) ✓ (target ≥80%)
+- Qwen 3.5 397B: 48.9% mean across 4 runs ✓ (target 25–50%)
+
+The gap is driven by rub_001 and rub_004–007 (sentinel-absence checks on the single-report,
+data-points, export, and attachment surfaces) plus rub_014 (sentinel sweep) — Qwen uses
+status-code-only assertions on these and fails all five consistently. Opus misses only
+rub_009–010 (fork laundering flows, weight 3 each = 6 pts); these are the non-obvious
+chained-endpoint items that account for Opus's 6/45 lost points.
