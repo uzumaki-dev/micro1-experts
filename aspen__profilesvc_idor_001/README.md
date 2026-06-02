@@ -39,36 +39,37 @@ issue?
 
 ## Final Calibration Results
 
-Calibrated 2026-06-02. Opus column from run 0cf9ab05 (87.2%). Qwen catch rates derived
-across all four runs; representative run 47230d65 (38.3%) for per-item breakdown.
+Calibrated 2026-06-03. Opus column from run d93fdd29 (87.2%). Qwen catch rates derived
+across all four successful runs; representative run a3c43178 (55.3%) for per-item breakdown.
+Failed runs (5e0e0fb1, 9d1b9e7d, fc896e22) excluded — environment failures, not model scores.
 
 | Model | Run 1 | Run 2 | Run 3 | Run 4 | Mean |
 |-------|-------|-------|-------|-------|------|
-| anthropic/claude-opus-4-7 | 87.2% (0cf9ab05) | — | — | — | 87.2% |
-| openrouter/qwen/qwen3.5-397b | 55.3% (69706dc2) | 51.1% (1769fbb8) | 46.8% (d5c1d538) | 38.3% (47230d65) | 47.9% |
+| anthropic/claude-opus-4-7 | 87.2% (d93fdd29) | — | — | — | 87.2% |
+| openrouter/qwen/qwen3.5-397b | 55.3% (a3c43178) | 44.7% (61558259) | 38.3% (89725d6b) | 42.6% (c4a9edf6) | 45.2% |
 
-Raw scores: Opus 41/47 pts (0cf9ab05).
+Raw scores: Opus 41/47 pts (d93fdd29).
 
 ### Per-Rubric Catch Rates
 
-Opus: 1 calibration run (0cf9ab05). Qwen: averaged across all four runs.
+Opus: 1 calibration run (d93fdd29). Qwen: averaged across all four successful runs.
 
 | Criterion | Opus 4.7 | Qwen 3.5 (4 runs) |
 |-----------|----------|-------------------|
-| rub_001 (GET /{id} private_summary sentinel) | 100% | 25% |
-| rub_002 (list private_summary sentinel) | 100% | 75% |
-| rub_003 (search private_summary sentinel) | 100% | 75% |
+| rub_001 (GET /{id} private_summary sentinel) | 100% | 0% |
+| rub_002 (list private_summary sentinel) | 100% | 25% |
+| rub_003 (search private_summary sentinel) | 100% | 50% |
 | rub_004 (experience salary_band sentinel) | 100% | 0% |
 | rub_005 (export json private_summary sentinel) | 100% | 0% |
 | rub_006 (export csv private_summary+salary_band sentinel) | 100% | 0% |
 | rub_007 (document download sentinel) | 100% | 0% |
-| rub_008 (path traversal sentinel) | 100% | 25% |
+| rub_008 (path traversal sentinel) | 100% | 50% |
 | rub_009 (fork-then-PATCH laundering) | 0% | 0% |
-| rub_010 (public-visibility access — guard) | 100% | 75% |
+| rub_010 (public-visibility access — guard) | 100% | 100% |
 | rub_011 (fork-then-export laundering) | 0% | 0% |
 | rub_012 (owner sees own private_summary — guard) | 100% | 100% |
 | rub_013 (admin sees private_summary — guard) | 100% | 100% |
-| rub_014 (non-admin create+list own profile — guard) | 100% | 75% |
+| rub_014 (non-admin create+list own profile — guard) | 100% | 100% |
 | rub_015 (no profilesvc/ modifications) | 100% | 100% |
 | rub_016 (no vacuous assertions) | 100% | 100% |
 | rub_017 (no hallucinated endpoints) | 100% | 100% |
@@ -81,19 +82,20 @@ Opus: 1 calibration run (0cf9ab05). Qwen: averaged across all four runs.
 **DISCRIMINATIVE**
 
 - Opus 4.7: 87.2% (1 run) ✓ (target ≥80%)
-- Qwen 3.5 397B: 47.9% mean across 4 runs ✓ (target 25–50%)
+- Qwen 3.5 397B: 45.2% mean across 4 runs ✓ (target 25–50%)
 
-The gap is driven by rub_004–007 (sentinel-absence checks on experience, export json, export
-csv, and document endpoints) — Qwen consistently falls back to status-code-only assertions
-on these and scores 0% across all four runs. rub_008 (path traversal) and rub_001 (direct
-GET) show partial Qwen pickup (25% each) depending on whether the run uses a combined
-`status == 403 or sentinel not in text` assertion. rub_009 and rub_011 (fork-then-PATCH and
-fork-then-export laundering) are the two items Opus also misses — Opus writes fork tests
-that check the fork response only, without chaining into a subsequent PATCH or export call.
-These two items (weight 3 each = 6 pts lost) account for Opus's 12.8% gap from 100%.
+The gap is driven by rub_001 and rub_004–007 (sentinel-absence checks on direct GET,
+experience, export json, export csv, and document endpoints) — Qwen scores 0% on these
+across all four runs, consistently falling back to status-code-only assertions. rub_003
+(search) and rub_008 (path traversal) show partial Qwen pickup at 50% depending on whether
+the run uses a body-content or combined `status == 403 or sentinel not in text` assertion.
+rub_009 and rub_011 (fork-then-PATCH and fork-then-export laundering) are the two items
+Opus also misses — Opus writes fork tests that check the fork response only, without
+chaining into a subsequent PATCH or export call. These two items (weight 3 each = 6 pts
+lost) account for Opus's 12.8% gap from 100%.
 
 ## Verdict Details
 
 - Opus score >= 80%: yes (87.2%)
-- All four Qwen runs in 25–50%: 55.3%, 51.1%, 46.8%, 38.3% — mean 47.9% ✓
+- All four Qwen runs in 25–50%: 55.3%, 44.7%, 38.3%, 42.6% — mean 45.2% ✓
 - Final: **PASS**
