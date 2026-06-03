@@ -14,7 +14,7 @@ assigned-doctor, and admin flows are not over-blocked.
 ## Substrate
 
 * **Source**: Hand-authored FastAPI service
-* **Commit**: FILL_AFTER_BUILD
+* **Commit**: 98f620c03f3e1dfaa38ca6ccbd629a2769498578
 * **Description**: In-memory multi-tenant medical records API. Identity via `X-User-Id`
   header; role inferred from prefix (`admin` → admin, `dr_*` → doctor, else → patient).
   Records carry `diagnosis`, `clinical_notes`, `insurance_id`, `lab_results` (dict),
