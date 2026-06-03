@@ -28,13 +28,13 @@ this specific issue?
 ## Calibration Results
 
 Calibrated 2026-06-03. Opus column from run 2ac885c1 (100%); Qwen catch rates derived
-from all 5 runs (identical item-level pattern across all runs).
+from all 4 runs (identical item-level pattern across all runs).
 
-| Model | Run 1 | Run 2 | Run 3 | Run 4 | Run 5 | Mean |
-|-------|-------|-------|-------|-------|-------|------|
-| Oracle (solve.sh) | 100% | — | — | — | — | 100% |
-| Claude Opus 4.7 | 100% (2ac885c1) | — | — | — | — | 100% |
-| Qwen 3.5 397B | 36% (81e28dc9) | 36% (0fcf4405) | 36% (7f687d3b) | 36% (22877be6) | 36% (574bcd2e) | 36% |
+| Model | Run 1 | Run 2 | Run 3 | Run 4 | Mean |
+|-------|-------|-------|-------|-------|------|
+| Oracle (solve.sh) | 100% | — | — | — | 100% |
+| Claude Opus 4.7 | 100% (2ac885c1) | — | — | — | 100% |
+| Qwen 3.5 397B | 36% (81e28dc9) | 36% (0fcf4405) | 36% (7f687d3b) | 36% (22877be6) | 36% |
 
 Raw scores: Opus 25/25 pts (2ac885c1), Qwen 9/25 pts (all runs).
 
