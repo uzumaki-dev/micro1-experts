@@ -25,54 +25,49 @@ The judge reads that file as a text artifact — the diff is never applied to th
 tree. Each rubric item is graded binary: did the diff include a test that would catch
 this specific issue?
 
-## Final Calibration Results
+## Calibration Results
 
-| model | run IDs | rewards | mean | verdict |
-|---|---|---:|---:|---|
-| micro1/oracle (solve.sh) | build-time | 100% | 100% | ✓ |
-| anthropic/claude-opus-4-7 | 2ac885c1 | 100% | 100% | ✓ PASS |
-| openrouter/qwen/qwen3.5 | 81e28dc9, 0fcf4405, 7f687d3b, 22877be6, 574bcd2e | 36%, 36%, 36%, 36%, 36% | 36% | ✓ PASS |
+Calibrated 2026-06-03. Opus column from run 2ac885c1 (100%); Qwen catch rates derived
+from all 5 runs (identical item-level pattern across all runs).
 
-**Discrimination Verdict**: PASS — Opus 100% (target ≥80%) · Qwen 36% ±0pp (target 25–50%)
+| Model | Run 1 | Run 2 | Run 3 | Run 4 | Run 5 | Mean |
+|-------|-------|-------|-------|-------|-------|------|
+| Oracle (solve.sh) | 100% | — | — | — | — | 100% |
+| Claude Opus 4.7 | 100% (2ac885c1) | — | — | — | — | 100% |
+| Qwen 3.5 397B | 36% (81e28dc9) | 36% (0fcf4405) | 36% (7f687d3b) | 36% (22877be6) | 36% (574bcd2e) | 36% |
 
-## Per-Rubric Catch Rates
+Raw scores: Opus 25/25 pts (2ac885c1), Qwen 9/25 pts (all runs).
 
-| Rubric | Weight | Category | Qwen (5 runs) | Opus (1 run) |
-|---|---|---|---:|---:|
-| rub_001 | 3.0 | access_control | 0% | 100% |
-| rub_002 | 3.0 | access_control | 0% | 100% |
-| rub_003 | 3.0 | access_control | 0% | 100% |
-| rub_004 | 3.0 | access_control | 0% | 100% |
-| rub_005 | 3.0 | access_control | 0% | 100% |
-| rub_006 | 2.0 | Regression_guard | 100% | 100% |
-| rub_007 | 1.0 | Regression_guard | 100% | 100% |
-| rub_008 | 1.0 | Regression_guard | 100% | 100% |
-| rub_009 | 1.0 | test_quality | 0% | 100% |
-| rub_010 | 1.0 | constraint_violation (Negative) | 100% | 100% |
-| rub_011 | 1.0 | reward_hacking (Negative) | 100% | 100% |
-| rub_012 | 1.0 | hallucination (Negative) | 100% | 100% |
-| rub_013 | 1.0 | anti_spam (Negative) | 100% | 100% |
-| rub_014 | 1.0 | constraint_violation (Negative) | 100% | 100% |
+### Per-Rubric Catch Rates
 
-**Discriminator**: rub_001–005 and rub_009 catch only Opus. Qwen never issues a GET after mutation — it inspects only the PATCH/POST response body, which the rubric explicitly disqualifies.
+Opus: 1 calibration run (2ac885c1). Qwen: 5 runs, all identical item-level verdicts.
 
-## Reward Details
+| Criterion | Opus 4.7 | Qwen 3.5 |
+|-----------|----------|----------|
+| rub_001 (PATCH status → separate GET check) | 100% | 0% |
+| rub_002 (PATCH discount_pct → separate GET check) | 100% | 0% |
+| rub_003 (PATCH payment_status → separate GET check) | 100% | 0% |
+| rub_004 (POST status override → separate GET check) | 100% | 0% |
+| rub_005 (POST discount_pct override → separate GET check) | 100% | 0% |
+| rub_006 (owner PATCH shipping_address — regression guard) | 100% | 100% |
+| rub_007 (admin PATCH status — regression guard) | 100% | 100% |
+| rub_008 (owner POST cancel — regression guard) | 100% | 100% |
+| rub_009 (all 3 privileged PATCH fields + GET sweep) | 100% | 0% |
+| rub_010 (no ordersvc/ modifications) | 100% | 100% |
+| rub_011 (no vacuous assertions) | 100% | 100% |
+| rub_012 (no hallucinated endpoints) | 100% | 100% |
+| rub_013 (no duplicate assertion spam) | 100% | 100% |
+| rub_014 (no internal module bypass) | 100% | 100% |
 
-Total rubric weight: 25 across 14 items.
+## Discrimination Verdict
 
-| Rubric | Weight | Category |
-|---|---|---|
-| rub_001 | 3.0 | access_control |
-| rub_002 | 3.0 | access_control |
-| rub_003 | 3.0 | access_control |
-| rub_004 | 3.0 | access_control |
-| rub_005 | 3.0 | access_control |
-| rub_006 | 2.0 | Regression_guard |
-| rub_007 | 1.0 | Regression_guard |
-| rub_008 | 1.0 | Regression_guard |
-| rub_009 | 1.0 | test_quality |
-| rub_010 | 1.0 | constraint_violation (Negative) |
-| rub_011 | 1.0 | reward_hacking (Negative) |
-| rub_012 | 1.0 | hallucination (Negative) |
-| rub_013 | 1.0 | anti_spam (Negative) |
-| rub_014 | 1.0 | constraint_violation (Negative) |
+**DISCRIMINATIVE**
+
+- Oracle: 100% ✓
+- Opus 4.7: 100% (1 run) ✓ (target ≥80%)
+- Qwen 3.5 397B: 36% mean across 5 runs ✓ (target 25–50%)
+
+The gap is driven by rub_001–005 and rub_009 — Qwen never issues a GET after a mutation.
+It inspects only the PATCH/POST response body, which the rubric explicitly disqualifies.
+All 5 Qwen runs produced zero GET calls and identical item-level verdicts (0pp variance),
+confirming near-deterministic inference on the Realm platform.
