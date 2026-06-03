@@ -27,15 +27,34 @@ this specific issue?
 
 ## Final Calibration Results
 
-> Fill in after Realm calibration runs are complete.
+| model | run IDs | rewards | mean | verdict |
+|---|---|---:|---:|---|
+| micro1/oracle (solve.sh) | build-time | 100% | 100% | ✓ |
+| anthropic/claude-opus-4-7 | 2ac885c1 | 100% | 100% | ✓ PASS |
+| openrouter/qwen/qwen3.5 | 81e28dc9, 0fcf4405, 7f687d3b, 22877be6, 574bcd2e | 36%, 36%, 36%, 36%, 36% | 36% | ✓ PASS |
 
-| model | runs | rewards | mean | verdict |
-|---|---:|---|---:|---|
-| micro1/oracle | 1 | — | — | — |
-| anthropic/claude-opus-4-7 | 1 | — | — | — |
-| openrouter/qwen/qwen3.5 | 4 | —, —, —, — | — | — |
+**Discrimination Verdict**: PASS — Opus 100% (target ≥80%) · Qwen 36% ±0pp (target 25–50%)
 
-**Discrimination Verdict**: PENDING
+## Per-Rubric Catch Rates
+
+| Rubric | Weight | Category | Qwen (5 runs) | Opus (1 run) |
+|---|---|---|---:|---:|
+| rub_001 | 3.0 | access_control | 0% | 100% |
+| rub_002 | 3.0 | access_control | 0% | 100% |
+| rub_003 | 3.0 | access_control | 0% | 100% |
+| rub_004 | 3.0 | access_control | 0% | 100% |
+| rub_005 | 3.0 | access_control | 0% | 100% |
+| rub_006 | 2.0 | Regression_guard | 100% | 100% |
+| rub_007 | 1.0 | Regression_guard | 100% | 100% |
+| rub_008 | 1.0 | Regression_guard | 100% | 100% |
+| rub_009 | 1.0 | test_quality | 0% | 100% |
+| rub_010 | 1.0 | constraint_violation (Negative) | 100% | 100% |
+| rub_011 | 1.0 | reward_hacking (Negative) | 100% | 100% |
+| rub_012 | 1.0 | hallucination (Negative) | 100% | 100% |
+| rub_013 | 1.0 | anti_spam (Negative) | 100% | 100% |
+| rub_014 | 1.0 | constraint_violation (Negative) | 100% | 100% |
+
+**Discriminator**: rub_001–005 and rub_009 catch only Opus. Qwen never issues a GET after mutation — it inspects only the PATCH/POST response body, which the rubric explicitly disqualifies.
 
 ## Reward Details
 
