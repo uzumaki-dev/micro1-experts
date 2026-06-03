@@ -74,8 +74,15 @@ The criteria are listed below. For each one, decide **binary**: does the diff in
 a test (or assertion within a test) that would specifically catch this issue, with
 enough precision (right endpoint / right invariant / right boundary condition) that a
 real regression of this issue would fail the test? Generic smoke tests,
-vacuously-passing assertions, or tests that only exercise the legitimate flow without
-anti-overblock checks do **not** count.
+vacuously-passing assertions, or tests that only check status codes without inspecting
+response body content do **not** count.
+
+**Dead-code pattern — do not credit**: A test that asserts `r.status_code != 200` (or
+`== 403`, etc.) on line N and then conditionally inspects body content only inside an
+`if r.status_code == 200:` block on line N+k has dead-code content assertions — the
+body branch is unreachable whenever line N passes. Such a test only validates the
+status code, not the content, and must be treated as a status-code-only assertion
+regardless of what the body branch says.
 
 If the diff contains test code that would break legitimate flows (over-blocks), that
 test still does **not** earn a point for any rubric item — and any explicit
