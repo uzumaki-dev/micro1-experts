@@ -84,6 +84,13 @@ body branch is unreachable whenever line N passes. Such a test only validates th
 status code, not the content, and must be treated as a status-code-only assertion
 regardless of what the body branch says.
 
+**Raw text check — do not credit for field-specific criteria**: Where a criterion
+explicitly requires the test to parse the JSON response and access a named field (e.g.
+`latest_message.private_content`, `msg["private_content"]`), an assertion of the form
+`assert SENTINEL not in r.text` or `assert SENTINEL not in str(r.content)` does **not**
+satisfy it — only an assertion that navigates the parsed response structure and checks
+the specific field by name counts.
+
 If the diff contains test code that would break legitimate flows (over-blocks), that
 test still does **not** earn a point for any rubric item — and any explicit
 anti-overblock rubric items must fail.
