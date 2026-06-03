@@ -12,7 +12,7 @@ owner and admin write flows.
 ## Substrate
 
 - **Source**: Hand-authored
-- **Commit**: FILL_AFTER_DOCKER_BUILD
+- **Commit**: 4770f2ae0f5d14d12e82ec2cfba86d3672155c15
 - **Description**: Small FastAPI service (~200 LOC) with an in-memory order store.
   Roles: `admin` (can set any field), regular user (can set `shipping_address`, `notes`
   only). Endpoints: POST /orders, GET /orders, GET /orders/{id}, PATCH /orders/{id},
