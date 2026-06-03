@@ -8,7 +8,7 @@ diff --git a/tests/exfiltration/test_idor.py b/tests/exfiltration/test_idor.py
 new file mode 100644
 --- /dev/null
 +++ b/tests/exfiltration/test_idor.py
-@@ -0,0 +1,155 @@
+@@ -0,0 +1,171 @@
 +"""Oracle test suite for messagesvc IDOR task (rub_001..rub_018).
 +
 +Direct-coverage tests assert that a non-participant never receives private content
@@ -30,6 +30,7 @@ new file mode 100644
 +
 +PRIVATE  = "ZZ-PRIVATE-8a2c4"
 +ATTACH   = "ZZ-ATTACH-8a2c4"
++CROSS    = "ZZ-CROSS-8a2c4"
 +OUTSIDER = "carol"
 +
 +
@@ -82,7 +83,7 @@ new file mode 100644
 +
 +def test_search_hides_private_content(client):
 +    _seed(client)
-+    r = client.get("/threads/search", params={"q": "Confidential"},
++    r = client.get("/threads/search", params={"q": PRIVATE},
 +                   headers=_h(OUTSIDER))
 +    assert PRIVATE not in r.text
 +
@@ -145,6 +146,20 @@ new file mode 100644
 +    assert r.status_code == 201
 +
 +
++def test_cross_thread_isolation(client):
++    """bob is a participant of thread A but NOT thread B."""
++    client.post("/threads", json={
++        "title": "Thread A", "participants": ["alice", "bob"],
++        "initial_body": "Thread A body", "private_content": "",
++    }, headers=_h("alice")).json()
++    t_b = client.post("/threads", json={
++        "title": "Thread B", "participants": ["alice"],
++        "initial_body": "Thread B body", "private_content": CROSS,
++    }, headers=_h("alice")).json()
++    r = client.get(f"/threads/{t_b['id']}", headers=_h("bob"))
++    assert CROSS not in r.text
++
++
 +def test_sentinel_sweep(client):
 +    t = _seed(client)
 +    tid = t["id"]
@@ -152,7 +167,7 @@ new file mode 100644
 +        client.get(f"/threads/{tid}", headers=_h(OUTSIDER)).text,
 +        client.get(f"/threads/{tid}/messages", headers=_h(OUTSIDER)).text,
 +        client.get("/threads", headers=_h(OUTSIDER)).text,
-+        client.get("/threads/search", params={"q": "Confidential"},
++        client.get("/threads/search", params={"q": PRIVATE},
 +                   headers=_h(OUTSIDER)).text,
 +    ]
 +    zip_r = client.get(f"/threads/{tid}/export",
