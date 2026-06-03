@@ -69,13 +69,17 @@ new file mode 100644
 +# --- rub_004: POST creation must ignore status override ---
 +def test_create_ignores_status_override():
 +    order = _create("dave", status="shipped")
-+    assert order["status"] == "pending", "creation must start at pending regardless of body"
++    oid = order["id"]
++    got = client.get(f"/orders/{oid}", headers={"x-user-id": "dave"}).json()
++    assert got["status"] == "pending", "creation must start at pending regardless of body"
 +
 +
 +# --- rub_005: POST creation must ignore discount_pct override ---
 +def test_create_ignores_discount_override():
 +    order = _create("eve", discount_pct=88.5)
-+    assert order["discount_pct"] == 0.0, "creation must start at 0.0 discount regardless of body"
++    oid = order["id"]
++    got = client.get(f"/orders/{oid}", headers={"x-user-id": "eve"}).json()
++    assert got["discount_pct"] == 0.0, "creation must start at 0.0 discount regardless of body"
 +
 +
 +# --- rub_006: owner can PATCH shipping_address (regression guard) ---
