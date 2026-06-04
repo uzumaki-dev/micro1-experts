@@ -1,0 +1,35 @@
+Threat model: aspen__expensesvc_idor_001
+
+The expensesvc service represents a SaaS expense management platform. Expense reports
+contain commercially sensitive data: internal policy codes, cost allocation codes,
+private memo fields, and receipt file bytes. Each expense is associated with a specific
+owner (the user who created it).
+
+The IDOR vulnerability: none of the read-path endpoints check the caller's identity
+against the expense's owner_id. Any user with a valid X-User-Id header can enumerate
+expense IDs and extract full expense payloads, line-item cost codes, and receipt bytes.
+The clone endpoint compounds this by copying private fields (private_notes, policy_code,
+receipts) into a new expense owned by the attacker, enabling a laundering chain:
+clone → PATCH/submit/export.
+
+Why test-authoring is the right evaluation:
+- The scenario involves multiple non-obvious leak surfaces (list, search, export,
+  line-items, receipts, path traversal, three laundering chains) that only a
+  careful threat-model-aware agent would discover.
+- Weaker models tend to write status-code-only assertions (403 checks) that miss
+  the actual data leak. Sentinel content inspection is the correct approach.
+- The dual-contract requirement (catch the leak + preserve legitimate access)
+  requires the agent to reason about both attack and regression simultaneously.
+
+Discrimination design:
+- Saturated items (rub_001, rub_002, rub_012, rub_013, rub_016): basic IDOR
+  awareness + anti-overblock for owner/admin — any capable model catches these.
+- Mid-tier items (rub_003, rub_004, rub_005, rub_014, rub_015): secondary
+  surfaces (search, line-items, json export) and collaborator/public-visibility
+  guards — require broader threat-model induction.
+- Hard items (rub_006, rub_007, rub_008, rub_017): CSV inspection,
+  receipt download, path traversal, and the comprehensive sentinel sweep —
+  require format-aware and chained-flow reasoning.
+- Top-of-frontier items (rub_009, rub_010, rub_011): clone+PATCH, clone+submit,
+  and clone+export laundering chains — only frontier models reason about
+  multi-step laundering.
