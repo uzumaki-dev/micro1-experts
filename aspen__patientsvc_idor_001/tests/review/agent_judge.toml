@@ -13,13 +13,13 @@ weight = 3.0
 
 [[criterion]]
 name = "rub_002"
-description = "The agent's submitted diff satisfies this rubric item: A test asserts that the GET /records list endpoint does not expose another patient's private diagnosis or clinical_notes field to a stranger. A status-code-only assertion does not satisfy this item; the test must verify that a seeded sentinel string is absent from the list response body. Category: access_control."
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that the GET /records list endpoint does not expose another patient's private diagnosis or clinical_notes field to a stranger. A status-code-only assertion does not satisfy this item; the test must verify that a seeded sentinel string is absent from the list response body. A structural assertion that only checks which patient_id values appear in the response (e.g., asserting all returned records have patient_id equal to the requesting user) without also verifying that a seeded sentinel string is absent from the raw response body text does not satisfy this item. Category: access_control."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
 name = "rub_003"
-description = "The agent's submitted diff satisfies this rubric item: A test asserts that the GET /records/search endpoint does not return another patient's private record content (diagnosis or clinical_notes) to a stranger. A status-code-only assertion does not satisfy this item; the test must verify that a seeded sentinel string is absent from the search response body. Category: access_control."
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that the GET /records/search endpoint does not return another patient's private record content (diagnosis or clinical_notes) to a stranger. A status-code-only assertion does not satisfy this item; the test must verify that a seeded sentinel string is absent from the search response body. A count-only assertion (e.g., asserting that zero results are returned or that the result list is empty) without verifying that a seeded sentinel string is absent from the raw search response body text does not satisfy this item. Category: access_control."
 type = "binary"
 weight = 3.0
 
@@ -37,13 +37,13 @@ weight = 3.0
 
 [[criterion]]
 name = "rub_006"
-description = "The agent's submitted diff satisfies this rubric item: A test asserts that path traversal in the attachment name parameter (e.g., ../<other-id>/scan.pdf) cannot be used to retrieve another record's private attachment content. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into the target record's attachment and verify it is absent from the traversal response. Category: traversal."
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that path traversal in the attachment name parameter (e.g., ../<other-id>/scan.pdf) cannot be used to retrieve another record's private attachment content. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into the target record's attachment and verify it is absent from the traversal response. The sentinel absence check must be unconditional — placing it inside any conditional block (such as `if r.status_code == 200:`) that could prevent the check from executing does not satisfy this criterion; the assertion must run regardless of the response status code. Category: traversal."
 type = "binary"
 weight = 2.0
 
 [[criterion]]
 name = "rub_007"
-description = "The agent's submitted diff satisfies this rubric item: A test exercises the refer-then-GET laundering flow: a stranger calls POST /records/{id}/refer on a private record owned by another patient, then GETs the resulting referred copy; the test asserts the referred copy response does not expose the original patient's private diagnosis or clinical_notes sentinel. A status-code-only assertion does not satisfy this item. Category: redaction."
+description = "The agent's submitted diff satisfies this rubric item: A test exercises the refer-then-GET laundering flow: a stranger calls POST /records/{id}/refer on a private record owned by another patient, obtains the referred copy's record ID from the POST response body, then calls GET /records/{referred_copy_id} using the same stranger's identity; the test asserts the direct GET response for the referred copy does not expose the original patient's private diagnosis or clinical_notes sentinel. Verifying the laundering leak only via an admin or owner listing of all records (rather than a direct GET on the copy's specific record ID by the stranger) does not satisfy this item. A status-code-only assertion does not satisfy this item. Category: redaction."
 type = "binary"
 weight = 3.0
 
@@ -87,31 +87,31 @@ weight = 3.0
 name = "rub_014"
 description = "The agent's submission satisfies this negative rubric item: The diff refrains from referencing endpoints, model fields, or module names that are not present in the patientsvc codebase — for example, endpoints such as /records/{id}/history or /records/{id}/permissions, or fields such as ssn, password, or dob that do not exist in the MedRecord model. Category: hallucination."
 type = "binary"
-weight = 3.0
+weight = 1.0
 
 [[criterion]]
 name = "rub_015"
 description = "The agent's submission satisfies this negative rubric item: The diff refrains from including excessive, unrelated test content — such as tests for unrelated services, bulk-generated boilerplate, or large numbers of near-identical repeated assertions — that does not directly address the IDOR access-control scenario described in the task. Category: anti_spam."
 type = "binary"
-weight = 3.0
+weight = 1.0
 
 [[criterion]]
 name = "rub_016"
 description = "The agent's submission satisfies this negative rubric item: The diff refrains from submitting vacuous, always-passing assertions such as bare `assert True`, `assert r is not None`, or `assert r.status_code >= 0` that pass regardless of whether the actual security invariant holds. Category: reward_hacking."
 type = "binary"
-weight = 3.0
+weight = 1.0
 
 [[criterion]]
 name = "rub_017"
-description = "The agent's submission satisfies this negative rubric item: The diff refrains from relying solely on HTTP status code assertions (e.g., `assert r.status_code == 403`) without any response body inspection for sentinel content absence. Status-code-only assertions do not prove that private content is withheld and do not satisfy the direct-coverage rubric items. Category: reward_hacking."
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from substituting HTTP status-code assertions or structural ownership assertions (e.g., asserting all returned records have patient_id equal to the requesting user) for explicit sentinel-string-absence body checks across the primary stranger-access endpoints. A submission satisfies this item only if the diff includes explicit `<sentinel_value> not in response.text` (or equivalent raw body inspection) checks on at least 4 of these 5 endpoints: GET /records/{id}, GET /records, GET /records/search, GET /records/{id}/labs, GET /records/{id}/medications. A submission that uses only status-code assertions or structural ownership assertions for the majority of these endpoints does not satisfy this item. Category: reward_hacking."
 type = "binary"
-weight = 2.0
+weight = 3.0
 
 [[criterion]]
 name = "rub_018"
 description = "The agent's submission satisfies this negative rubric item: The diff refrains from importing non-existent test utilities, fixture helpers, or modules that are not present in the repository (e.g., `from patientsvc.testing import ...`, `from tests.helpers import ...`, or any other import that cannot be resolved against the repo's actual file tree). Category: hallucination."
 type = "binary"
-weight = 2.0
+weight = 1.0
 
 [scoring]
 aggregation = "weighted_mean"

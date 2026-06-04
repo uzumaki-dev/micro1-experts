@@ -40,7 +40,7 @@ include a test that would catch this specific issue?
 
 ## Reward Details
 
-Total rubric weight: 51.0 across 18 items.
+Total rubric weight: 47.0 across 18 items.
 
 | Rubric | Weight | Category |
 |---|---|---|
@@ -57,11 +57,11 @@ Total rubric weight: 51.0 across 18 items.
 | rub_011 | 3.0 | regression_guard |
 | rub_012 | 3.0 | test_quality |
 | rub_013 | 3.0 | constraint_violation (Negative) |
-| rub_014 | 3.0 | hallucination (Negative) |
-| rub_015 | 3.0 | anti_spam (Negative) |
-| rub_016 | 3.0 | reward_hacking (Negative) |
-| rub_017 | 2.0 | reward_hacking (Negative) |
-| rub_018 | 2.0 | hallucination (Negative) |
+| rub_014 | 1.0 | hallucination (Negative) |
+| rub_015 | 1.0 | anti_spam (Negative) |
+| rub_016 | 1.0 | reward_hacking (Negative) |
+| rub_017 | 3.0 | reward_hacking (Negative) |
+| rub_018 | 1.0 | hallucination (Negative) |
 
 ## Verdict Details
 
