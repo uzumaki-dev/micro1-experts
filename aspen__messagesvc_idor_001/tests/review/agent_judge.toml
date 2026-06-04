@@ -7,13 +7,13 @@ prompt_template = "prompt.md"
 
 [[criterion]]
 name = "rub_001"
-description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-participant GET /threads/{id} response does not contain the private_content sentinel value of a thread created by a participant. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into private_content and verify it is absent from the response body. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-participant GET /threads/{id} response does not contain the private_content sentinel value of a thread created by a participant. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into private_content and assert that the specific sentinel string is absent from the response — asserting that the private_content field equals an empty string, None, or any non-sentinel placeholder does not satisfy this criterion. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
 name = "rub_002"
-description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-participant GET /threads/{id}/messages response does not contain the private_content sentinel value in any message in the list. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string and verify it is absent from the response body. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-participant GET /threads/{id}/messages response does not contain the private_content sentinel value in any message in the list. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into private_content and assert that the specific sentinel string is absent from every message in the response — asserting that any message's private_content field equals an empty string, None, or any non-sentinel placeholder does not satisfy this criterion. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
 type = "binary"
 weight = 3.0
 

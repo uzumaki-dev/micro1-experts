@@ -18,16 +18,3 @@ fixed. A test that passes on the current buggy code is not catching anything.
 **Submission**:
 Save your complete test suite as a unified diff to `/repo/answer.diff`.
 The verifier reads this file as text — the diff is never applied to the working tree.
-
-**Framework context**:
-The service uses FastAPI with an in-memory store. All endpoints accept an `X-User-Id`
-header to identify the caller. Users whose ID equals `admin` or starts with `admin` are
-privileged; all others are regular users. Authentication is simulated — there is no
-token validation.
-
-Threads are created with an explicit `participants` list. Only participants and admins
-may post new messages to a thread. The `private_content` field on messages carries
-sensitive data that should be visible only to thread participants and admins.
-
-Refer to `tests/test_smoke.py` to understand the API surface and how the service is
-intended to be used.
