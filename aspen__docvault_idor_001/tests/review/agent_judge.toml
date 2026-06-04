@@ -1,0 +1,111 @@
+[judge]
+judge = "claude-code"
+timeout = 600
+isolated = false
+cwd = "/repo"
+prompt_template = "prompt.md"
+
+[[criterion]]
+name = "rub_001"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-owner GET /documents/{id} of another user's private document does not expose the document body or secret_notes. The test must include a content-inspection assertion: it seeds sentinel values into body and/or secret_notes and asserts those sentinel strings do not appear in the response text — catching data exposure regardless of whether a fix uses access-denial or field-redaction. A status-code-only assertion (e.g., assert status == 403) without any check of response content does not satisfy this item. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_002"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-owner GET /documents (list endpoint) response does not include other users' private documents or their private fields. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_003"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-owner GET /documents/search response does not return other users' private document content. The test must seed sentinel values into the private document's body or secret_notes and assert those sentinel strings do not appear in the raw search response text — a content-scan assertion beyond checking only whether the document ID or title appears in results. A test that only checks document presence or absence by ID or title, without scanning response text for sentinel content, does not satisfy this item. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_004"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-owner GET /documents/{id}/export with format=json does not expose the secret_notes or body content of a document they do not own. The test must seed sentinel values and assert those sentinel strings do not appear in the response text — not merely check the HTTP status code. A status-code-only assertion does not satisfy this item. Category: redaction."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_005"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that the zip export (format=zip) of a non-owned private document does not contain the private bytes (secret_notes or attachment content) inside the archive, inspecting the archive contents rather than only the status code. Category: redaction."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_006"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-owner GET /documents/{id}/attachments for an attachment they do not own does not return the attachment content, by seeding sentinel bytes into the attachment and asserting those bytes do not appear in the response — inspecting response content rather than relying solely on the HTTP status code. A status-code-only assertion does not satisfy this item. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_007"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-owner GET /documents/{id}/versions does not leak prior private content (old body or secret_notes) from the version history. The test must seed sentinel values into at least one version's body or secret_notes and assert those sentinel strings do not appear in the non-owner response — a content-inspection assertion that catches both hard denial and data leakage in a 2xx response. A status-code-only assertion does not satisfy this item. Category: ownership."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_008"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-owner cannot use path-traversal segments (e.g., ..) in the attachment name to read another document's attachment. The test must seed sentinel bytes into the target attachment and assert those bytes do not appear in the traversal response — a content-inspection assertion rather than a status-code-only check. Category: traversal."
+type = "binary"
+weight = 2.0
+
+[[criterion]]
+name = "rub_009"
+description = "The agent's submitted diff satisfies this rubric item: A test exercises the duplicate-then-read laundering flow: a non-owner duplicates a document they do not own, then reads the clone, and the test asserts the clone response does not expose the inherited secret_notes. Category: redaction."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_010"
+description = "The agent's submitted diff satisfies this rubric item: A test exercises the duplicate-then-share laundering flow: after a non-owner duplicates a document, calling /documents/{id}/share on the clone does not leak the inherited private fields. Category: redaction."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_011"
+description = "The agent's submitted diff satisfies this rubric item: A test exercises the duplicate-then-export laundering flow: after a non-owner duplicates a document, exporting the clone does not leak the inherited private fields. Category: redaction."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_012"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that the owner GET /documents/{id} STILL returns the full body and secret_notes. Catches fixes that redact responses unconditionally. Category: regression_guard."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_013"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that an admin GET /documents/{id} STILL returns the full private fields for a document they do not own. Category: regression_guard."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_014"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that a user listed in a document's collaborators can STILL read that document. Category: regression_guard."
+type = "binary"
+weight = 2.0
+
+[[criterion]]
+name = "rub_015"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that a public document's body remains readable by a non-owner (200). Catches fixes that over-deny the public read surface. Category: regression_guard."
+type = "binary"
+weight = 2.0
+
+[[criterion]]
+name = "rub_016"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that a non-admin user can STILL create and list their OWN documents (the write/list surface is not admin-gated). Category: regression_guard."
+type = "binary"
+weight = 2.0
+
+[[criterion]]
+name = "rub_017"
+description = "The agent's submitted diff satisfies this rubric item: A test seeds sentinel marker bytes into a private document's secret_notes/attachment and asserts those bytes do not appear in any non-owner response, including inside the zip-archive contents. Strictly stronger than status-code-only assertions. Category: test_quality."
+type = "binary"
+weight = 3.0
+
+[scoring]
+aggregation = "weighted_mean"
