@@ -9,7 +9,7 @@ diff --git a/tests/exfiltration/test_timesheet_idor.py b/tests/exfiltration/test
 new file mode 100644
 --- /dev/null
 +++ b/tests/exfiltration/test_timesheet_idor.py
-@@ -0,0 +1,223 @@
+@@ -0,0 +1,220 @@
 +"""Oracle test suite for aspen__timesheetsvc_idor_001 (rub_001..rub_017).
 +
 +Direct-coverage tests assert that a stranger never receives another owner's

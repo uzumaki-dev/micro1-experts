@@ -103,9 +103,9 @@ weight = 3.0
 
 [[criterion]]
 name = "rub_017"
-description = "The agent's submitted diff satisfies this rubric item: The submitted tests collectively seed sentinel marker strings into a private timesheet's internal_notes, entry rate_code, and receipts, then issue requests to all stranger-accessible endpoints (GET /timesheets/{id}, GET /timesheets, GET /timesheets/search, GET /timesheets/{id}/entries, GET /timesheets/{id}/export?format=json, GET /timesheets/{id}/export?format=csv), asserting that none of the sentinel strings appear in any of those responses. Tests that only check status codes without verifying sentinel absence do not satisfy this item. Category: test_quality."
+description = "The agent's submitted diff satisfies this rubric item: The submitted tests include a unified sentinel sweep — a single test or assertion block that seeds all three sentinel types (internal_notes, entry rate_code, AND receipt content) and issues requests to at least four of the six stranger-accessible endpoints (GET /timesheets/{id}, GET /timesheets, GET /timesheets/search, GET /timesheets/{id}/entries, GET /timesheets/{id}/export?format=json, GET /timesheets/{id}/export?format=csv), then asserts in one combined check that none of the three sentinel strings appears in any of those responses. Tests that check only one or two sentinel types, or that check each endpoint in isolation with separate seed-and-assert cycles rather than a combined sweep, do not satisfy this item. Category: test_quality."
 type = "binary"
-weight = 3.0
+weight = 2.0
 
 [scoring]
 aggregation = "weighted_mean"
