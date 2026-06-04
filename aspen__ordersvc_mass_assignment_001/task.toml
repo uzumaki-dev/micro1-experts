@@ -1,0 +1,41 @@
+schema_version = "1.2"
+artifacts = []
+
+[task]
+name = "micro1/aspen__ordersvc_mass_assignment_001"
+description = "Author tests for ordersvc mass assignment — a FastAPI order service allows non-admin users to override privileged fields (status, discount_pct, payment_status) via mass assignment on PATCH and POST endpoints"
+authors = [{ name = "Zeeshan Amir", email = "zeam710@expert.micro1.ai" }]
+keywords = ["mass-assignment", "access-control", "test-authoring", "orders"]
+
+[metadata]
+source = "m1-rl-envs"
+environment_id = "aspen"
+instance_id = "aspen__ordersvc_mass_assignment_001"
+pipeline = "aspen"
+task_type = "test_authoring"
+rubric_only = true
+image_digest = "sha256:FILL_AFTER_UPLOAD"
+base_commit = "4770f2ae0f5d14d12e82ec2cfba86d3672155c15"
+
+[verifier]
+timeout_sec = 1800.0
+
+[verifier.env]
+ANTHROPIC_API_KEY = "${ANTHROPIC_API_KEY:-}"
+OPENAI_API_KEY = "${OPENAI_API_KEY:-}"
+
+[agent]
+timeout_sec = 3600.0
+
+[environment]
+build_timeout_sec = 3600.0
+cpus = 2
+memory_mb = 4096
+storage_mb = 10240
+gpus = 0
+allow_internet = true
+mcp_servers = []
+
+[environment.env]
+
+[solution.env]
