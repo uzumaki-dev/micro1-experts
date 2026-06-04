@@ -28,19 +28,22 @@ test that would catch this specific issue?
 
 ## Final Calibration Results
 
-| model | runs | rewards | mean | verdict |
-|---|---:|---|---:|---|
-| anthropic/claude-haiku-4-5-20251001 (oracle) | 1 | 100.0% | 100.0% | verifier wiring passes |
-| anthropic/claude-opus-4-7 | 1 | 81.3% | 81.3% | passes target (≥80%) |
-| openrouter/qwen/qwen3.5-397b-a17b | 4 | 33.3%, 37.5%, 43.8%, 39.6% | 38.6% | within target range (25–50%) |
+| model | run | reward | mean | verdict |
+|---|---|---:|---:|---|
+| anthropic/claude-haiku-4-5-20251001 (oracle) | 577284cd | 100.0% | 100.0% | verifier wiring passes |
+| anthropic/claude-opus-4-7 | 418127de | 82.6% | 82.6% | passes target (≥80%) |
+| openrouter/qwen/qwen3.5-397b-a17b | e494e84d | 45.7% | | |
+| openrouter/qwen/qwen3.5-397b-a17b | ff1dbac1 | 50.0% | | |
+| openrouter/qwen/qwen3.5-397b-a17b | 300e1277 | 43.5% | | |
+| openrouter/qwen/qwen3.5-397b-a17b | ea9a7d79 | 28.3% | 41.9% | within target range (25–50%) |
 
-*One additional Qwen run (fbb67a27) failed at the system level (0%) and is excluded from calibration.*
+*One additional Qwen run (79cc3ee6) failed at the system level (0%) and is excluded from calibration.*
 
-**Discrimination Verdict**: DISCRIMINATIVE. Opus lands above the 80% floor (81.3%) and all four valid Qwen runs fall within the 25–50% target band (33.3%–43.8%), producing a 42.7 pp spread. The laundering flows (rub_009–011) and comprehensive sentinel sweep (rub_017) are the primary discrimination levers — Opus catches the sentinel-based access-control items but misses all three clone laundering flows; Qwen further misses most body-inspection items, relying on status-code-only assertions.
+**Discrimination Verdict**: DISCRIMINATIVE. Opus lands above the 80% floor (82.6%) and all four valid Qwen runs fall within the 25–50% target band (28.3%–50.0%), producing a 40.7 pp spread. The clone laundering flows (rub_009–011) and unified sentinel sweep (rub_017) are the primary discrimination levers — Opus catches all sentinel-based access-control and clone-response items but misses the chained laundering flows; Qwen further misses most body-inspection items, relying on status-code-only assertions.
 
 ## Reward Details
 
-Total rubric weight: 48.0 across 17 items.
+Total rubric weight: 46.0 across 18 items.
 
 | Rubric | Weight | Category |
 |---|---|---|
@@ -52,18 +55,19 @@ Total rubric weight: 48.0 across 17 items.
 | rub_006 | 3.0 | access_control |
 | rub_007 | 3.0 | access_control |
 | rub_008 | 2.0 | traversal |
-| rub_009 | 3.0 | redaction |
-| rub_010 | 3.0 | redaction |
-| rub_011 | 3.0 | redaction |
+| rub_009 | 2.0 | redaction |
+| rub_010 | 2.0 | redaction |
+| rub_011 | 2.0 | redaction |
 | rub_012 | 3.0 | regression_guard |
 | rub_013 | 3.0 | regression_guard |
 | rub_014 | 2.0 | regression_guard |
 | rub_015 | 2.0 | regression_guard |
 | rub_016 | 3.0 | regression_guard |
-| rub_017 | 3.0 | test_quality |
+| rub_017 | 2.0 | test_quality |
+| rub_018 | 2.0 | redaction |
 
 ## Verdict Details
 
-- Opus score ≥ 80%: yes (81.3%)
-- All four Qwen runs in 25–50%: yes (33.3%, 37.5%, 43.8%, 39.6%)
+- Opus score ≥ 80%: yes (82.6%, run 418127de)
+- All four Qwen runs in 25–50%: yes (28.3%, 43.5%, 45.7%, 50.0%)
 - Final: PASS
