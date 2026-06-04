@@ -1,0 +1,34 @@
+Threat model: aspen__invoicesvc_idor_001
+
+The invoicesvc service represents a SaaS billing platform. Invoices contain
+commercially sensitive data: internal cost codes, discount structures, contract
+attachment bytes, and private memo fields. Each invoice is associated with a
+specific owner (the user who created it).
+
+The IDOR vulnerability: none of the read-path endpoints check the caller's
+identity against the invoice's owner_id. Any user with a valid X-User-Id header
+can enumerate invoice IDs and extract full invoice payloads, line-item cost codes,
+and attachment bytes. The duplicate endpoint compounds this by copying private
+fields (internal_notes, attachments) into a new invoice owned by the attacker,
+enabling a laundering chain: duplicate → PATCH/share/export.
+
+Why test-authoring is the right evaluation:
+- The scenario involves multiple non-obvious leak surfaces (list, search, export,
+  line-items, attachments, path traversal, three laundering chains) that only a
+  careful threat-model-aware agent would discover.
+- Weaker models tend to write status-code-only assertions (403 checks) that miss
+  the actual data leak. Sentinel content inspection is the correct approach.
+- The dual-contract requirement (catch the leak + preserve legitimate access)
+  requires the agent to reason about both attack and regression simultaneously.
+
+Discrimination design:
+- Saturated items (rub_001, rub_002, rub_012, rub_013, rub_016): basic IDOR
+  awareness + anti-overblock for owner/admin — any capable model catches these.
+- Mid-tier items (rub_003, rub_004, rub_005, rub_014, rub_015): secondary
+  surfaces (search, line-items, json export) and collaborator/public-visibility
+  guards — require broader threat-model induction.
+- Hard items (rub_006, rub_007, rub_008, rub_009, rub_017): CSV inspection,
+  attachment download, path traversal, duplicate+PATCH laundering, and the
+  comprehensive sentinel sweep — require format-aware and chained-flow reasoning.
+- Top-of-frontier items (rub_010, rub_011): duplicate+share and duplicate+export
+  laundering chains — only frontier models reason about multi-step laundering.
