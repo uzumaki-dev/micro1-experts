@@ -9,8 +9,8 @@ diff --git a/tests/exfiltration/test_timesheet_idor.py b/tests/exfiltration/test
 new file mode 100644
 --- /dev/null
 +++ b/tests/exfiltration/test_timesheet_idor.py
-@@ -0,0 +1,220 @@
-+"""Oracle test suite for aspen__timesheetsvc_idor_001 (rub_001..rub_017).
+@@ -0,0 +1,227 @@
++"""Oracle test suite for aspen__timesheetsvc_idor_001 (rub_001..rub_018).
 +
 +Direct-coverage tests assert that a stranger never receives another owner's
 +private timesheet content (sentinel-absent style, robust to either a 403 or a
@@ -230,6 +230,13 @@ new file mode 100644
 +    ]
 +    combined = "".join(texts)
 +    assert SECRET not in combined and RCPT not in combined and RATE not in combined
++
++
++# rub_018 — clone creation response does not carry forward private notes or rate_code
++def test_clone_response_does_not_expose_private_data(client):
++    victim = _private_timesheet(client, "alice")
++    clone_r = client.post(f"/timesheets/{victim['id']}/clone", headers=_h(STRANGER))
++    assert SECRET not in clone_r.text and RATE not in clone_r.text
 DIFF_EOF
 
 echo "Wrote oracle diff to /repo/answer.diff."

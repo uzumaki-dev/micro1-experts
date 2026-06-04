@@ -57,19 +57,19 @@ weight = 2.0
 name = "rub_009"
 description = "The agent's submitted diff satisfies this rubric item: A test exercises the clone-then-PATCH laundering flow: a stranger clones a private timesheet owned by another user, then PATCHes the clone's project name; the test asserts the clone response and the PATCH response do not expose the original owner's private internal_notes sentinel. A status-code-only assertion does not satisfy this item. Category: redaction."
 type = "binary"
-weight = 3.0
+weight = 2.0
 
 [[criterion]]
 name = "rub_010"
 description = "The agent's submitted diff satisfies this rubric item: A test exercises the clone-then-submit laundering flow: a stranger clones a private timesheet owned by another user, then calls POST /timesheets/{id}/submit on the clone; the test asserts neither the clone response nor the submit response exposes the original owner's private internal_notes sentinel. A status-code-only assertion does not satisfy this item. Category: redaction."
 type = "binary"
-weight = 3.0
+weight = 2.0
 
 [[criterion]]
 name = "rub_011"
 description = "The agent's submitted diff satisfies this rubric item: A test exercises the clone-then-export laundering flow: a stranger clones a private timesheet owned by another user, then calls GET /timesheets/{id}/export?format=json on the clone; the test asserts the export response does not expose the original owner's private internal_notes or rate_code sentinels. A status-code-only assertion does not satisfy this item. Category: redaction."
 type = "binary"
-weight = 3.0
+weight = 2.0
 
 [[criterion]]
 name = "rub_012"
@@ -104,6 +104,12 @@ weight = 3.0
 [[criterion]]
 name = "rub_017"
 description = "The agent's submitted diff satisfies this rubric item: The submitted tests include a unified sentinel sweep — a single test or assertion block that seeds all three sentinel types (internal_notes, entry rate_code, AND receipt content) and issues requests to at least four of the six stranger-accessible endpoints (GET /timesheets/{id}, GET /timesheets, GET /timesheets/search, GET /timesheets/{id}/entries, GET /timesheets/{id}/export?format=json, GET /timesheets/{id}/export?format=csv), then asserts in one combined check that none of the three sentinel strings appears in any of those responses. Tests that check only one or two sentinel types, or that check each endpoint in isolation with separate seed-and-assert cycles rather than a combined sweep, do not satisfy this item. Category: test_quality."
+type = "binary"
+weight = 2.0
+
+[[criterion]]
+name = "rub_018"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that when a stranger POSTs /timesheets/{id}/clone on a private timesheet owned by another user, the clone response body does not contain the original owner's private internal_notes sentinel. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into internal_notes and verify it is absent from the clone creation response or a subsequent GET of the cloned timesheet. Category: redaction."
 type = "binary"
 weight = 2.0
 
