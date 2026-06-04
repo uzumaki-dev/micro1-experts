@@ -103,7 +103,7 @@ weight = 3.0
 
 [[criterion]]
 name = "rub_017"
-description = "The agent's submitted diff satisfies this rubric item: The submitted tests collectively cover all three sentinel types (internal_notes, entry rate_code, AND receipt content) and include body-inspection assertions — not status-code-only checks — for at least four of the six stranger-accessible endpoints: GET /timesheets/{id}, GET /timesheets, GET /timesheets/search, GET /timesheets/{id}/entries, GET /timesheets/{id}/export?format=json, and GET /timesheets/{id}/export?format=csv. Individual per-endpoint tests with separate sentinel seeds count toward this collective coverage requirement. A submission that relies on status-code-only assertions for most endpoints, or covers fewer than three sentinel types across the suite, does not satisfy this item. Category: test_quality."
+description = "The agent's submitted diff satisfies this rubric item: The submitted tests include a unified sentinel sweep — a single test or assertion block that seeds all three sentinel types (internal_notes, entry rate_code, AND receipt content) and issues requests to at least four of the six stranger-accessible endpoints (GET /timesheets/{id}, GET /timesheets, GET /timesheets/search, GET /timesheets/{id}/entries, GET /timesheets/{id}/export?format=json, GET /timesheets/{id}/export?format=csv), then asserts in one combined check that none of the three sentinel strings appears in any of those responses. Tests that check only one or two sentinel types, or that check each endpoint in isolation with separate seed-and-assert cycles rather than a combined sweep, do not satisfy this item. Category: test_quality."
 type = "binary"
 weight = 2.0
 
