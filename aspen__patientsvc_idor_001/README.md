@@ -1,15 +1,24 @@
 # aspen__patientsvc_idor_001
 
-## Status
+## Task Summary
 
-Medical records service leaks private patient data to any authenticated user because
-read, list, search, labs, medications, export, and attachments endpoints perform no
-ownership checks. A `refer` endpoint copies all private fields verbatim into the
-attacker's new record. The task rewards tests that verify: (1) stranger cannot read
-another patient's `diagnosis`, `clinical_notes`, `insurance_id`, `lab_results`,
-`medications`, or attachment bytes; (2) a "refer-then-read/export" laundering flow
-does not inherit private fields into the attacker's copy; and (3) legitimate patient,
-assigned-doctor, and admin flows are not over-blocked.
+IDOR vulnerability in a FastAPI medical records service. Private `diagnosis`,
+`clinical_notes`, `insurance_id`, `lab_results`, `medications`, and attachment bytes
+leak to any authenticated caller across 8 distinct surfaces: direct GET, list, search,
+labs, medications, export, attachment path traversal, and a `refer` endpoint that copies
+all private fields verbatim into the attacker's own record (enabling refer→GET and
+refer→export laundering flows).
+
+Rubric: 18 items, total weight 45.
+- rub_001–005: direct-coverage sentinel checks per endpoint (weight 3 each = 15 pts)
+- rub_006: attachment path traversal (weight 2)
+- rub_007–008: laundering flow sentinel checks (weight 3 each = 6 pts)
+- rub_009–011: regression_guard anti-overblock items (weight 3 each = 9 pts)
+- rub_012: sentinel sweep quality item (weight 3)
+- rub_013–018: negative criteria — constraint_violation, reward_hacking, hallucination, anti_spam (weight 3+1+1+1+3+1 = 10 pts)
+
+All direct-coverage items require sentinel-based content inspection; status-code-only
+assertions do not satisfy rub_001–008.
 
 ## Substrate
 
@@ -28,19 +37,66 @@ The agent writes a unified diff (adding files under `tests/exfiltration/`) to
 never applied to the working tree. Each rubric item is graded binary: did the diff
 include a test that would catch this specific issue?
 
-## Final Calibration Results
+## Calibration Results
 
-| model | runs | rewards | mean | verdict |
-|---|---:|---|---:|---|
-| anthropic/claude-haiku-4-5-20251001 (oracle) | — | — | — | pending |
-| anthropic/claude-opus-4-7 | — | — | — | pending |
-| openrouter/qwen/qwen3.5-397b-a17b | — | — | — | pending |
+Calibrated 2026-06-05. Qwen catch rates derived from run 78de03c9 (35.6%); other Qwen
+runs show the same core pattern (rub_001–008 fail, rub_009–011 and rub_013–016/018 pass
+consistently). Variance in rub_002/003 arises when Qwen extracts diagnosis fields from
+the JSON body rather than using patient_id-only or result-count assertions.
 
-**Discrimination Verdict**: PENDING
+| Model | Run 1 | Run 2 | Run 3 | Run 4 | Mean |
+|-------|-------|-------|-------|-------|------|
+| Oracle (solve.sh) | 100% (b76cbe65) | — | — | — | 100% |
+| Claude Opus 4.7 | 86.7% (7ef27771) | — | — | — | 86.7% |
+| Qwen 3.5 397B | 35.6% (78de03c9) | 35.6% (04e96cfb) | 42.2% (f37988b4) | 48.9% (03f350ad) | 40.6% |
+
+Raw scores: Opus 39/45 pts (7ef27771), Qwen 16/45 pts (78de03c9).
+
+### Per-Rubric Catch Rates
+
+Opus: 1 calibration run (7ef27771). Qwen: 4 calibration runs; catch rates derived
+from run 78de03c9 (35.6%), representative of the status-code-only pattern.
+
+| Criterion | Opus 4.7 | Qwen 3.5 |
+|-----------|----------|----------|
+| rub_001 (GET /records/{id} — sentinel check) | 100% | 0% |
+| rub_002 (list — sentinel check) | 100% | 50% |
+| rub_003 (search — sentinel check) | 100% | 25% |
+| rub_004 (labs — sentinel check) | 100% | 0% |
+| rub_005 (medications — sentinel check) | 100% | 0% |
+| rub_006 (attachment traversal — unconditional sentinel) | 100% | 0% |
+| rub_007 (refer→GET direct copy sentinel) | 0% | 0% |
+| rub_008 (refer→export laundering sentinel) | 0% | 0% |
+| rub_009 (owner still reads own record — guard) | 100% | 100% |
+| rub_010 (assigned doctor still reads — guard) | 100% | 100% |
+| rub_011 (admin still reads — guard) | 100% | 100% |
+| rub_012 (sentinel sweep across all surfaces) | 100% | 0% |
+| rub_013 (no app code modification) | 100% | 100% |
+| rub_014 (no hallucinated endpoints/fields) | 100% | 100% |
+| rub_015 (no unrelated test content) | 100% | 100% |
+| rub_016 (no vacuous assertions) | 100% | 100% |
+| rub_017 (sentinel body checks on ≥4/5 endpoints) | 100% | 0% |
+| rub_018 (no fake imports) | 100% | 100% |
+
+## Discrimination Verdict
+
+**DISCRIMINATIVE**
+
+- Oracle: 100% ✓
+- Opus 4.7: 86.7% (1 run) ✓ (target ≥80%)
+- Qwen 3.5 397B: 40.6% mean across 4 runs ✓ (target 25–50%)
+
+The gap is driven by rub_001 and rub_004–008 (sentinel-absence checks Qwen never writes
+on per-endpoint tests) plus rub_012 (sentinel sweep) and rub_017 (body-inspection gate) —
+Qwen uses status-code-only assertions on these and fails all eight. rub_002/003 show
+run-to-run variance (0–50%/0–25%) depending on whether Qwen extracts and checks parsed
+diagnosis fields vs. using patient_id or count assertions; all 4 runs remain within target.
+Opus consistently misses rub_007 and rub_008 (the laundering flows — non-obvious chained
+endpoints); these account for Opus's 6/45 lost points.
 
 ## Reward Details
 
-Total rubric weight: 47.0 across 18 items.
+Total rubric weight: 45.0 across 18 items.
 
 | Rubric | Weight | Category |
 |---|---|---|
@@ -62,9 +118,3 @@ Total rubric weight: 47.0 across 18 items.
 | rub_016 | 1.0 | reward_hacking (Negative) |
 | rub_017 | 3.0 | reward_hacking (Negative) |
 | rub_018 | 1.0 | hallucination (Negative) |
-
-## Verdict Details
-
-- Opus score ≥ 80%: pending
-- All four Qwen runs in 25–50%: pending
-- Final: PENDING
