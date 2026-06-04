@@ -43,31 +43,34 @@ test that would catch this specific issue?
 
 ## Reward Details
 
-Total rubric weight: 46.0 across 18 items.
+Total rubric weight: 47.0 across 20 items (6 negative = 30%).
 
-| Rubric | Weight | Category |
-|---|---|---|
-| rub_001 | 3.0 | access_control |
-| rub_002 | 3.0 | access_control |
-| rub_003 | 3.0 | access_control |
-| rub_004 | 3.0 | access_control |
-| rub_005 | 3.0 | access_control |
-| rub_006 | 3.0 | access_control |
-| rub_007 | 3.0 | access_control |
-| rub_008 | 2.0 | traversal |
-| rub_009 | 2.0 | redaction |
-| rub_010 | 2.0 | redaction |
-| rub_011 | 2.0 | redaction |
-| rub_012 | 3.0 | regression_guard |
-| rub_013 | 3.0 | regression_guard |
-| rub_014 | 2.0 | regression_guard |
-| rub_015 | 2.0 | regression_guard |
-| rub_016 | 3.0 | regression_guard |
-| rub_017 | 2.0 | test_quality |
-| rub_018 | 2.0 | redaction |
+| Rubric | Weight | Category | Polarity |
+|---|---|---|---|
+| rub_001 | 3.0 | access_control | positive |
+| rub_002 | 3.0 | access_control | positive |
+| rub_003 | 3.0 | access_control | positive |
+| rub_004 | 3.0 | access_control | positive |
+| rub_005 | 3.0 | access_control | positive |
+| rub_006 | 3.0 | access_control | positive |
+| rub_007 | 3.0 | access_control | positive |
+| rub_008 | 2.0 | traversal | positive |
+| rub_009 | 2.0 | redaction | positive |
+| rub_010 | 2.0 | redaction | positive |
+| rub_011 | 2.0 | redaction | positive |
+| rub_012 | 3.0 | regression_guard | positive |
+| rub_013 | 3.0 | regression_guard | positive |
+| rub_014 | 3.0 | constraint_violation | **negative** |
+| rub_015 | 1.0 | constraint_violation | **negative** |
+| rub_016 | 1.0 | hallucination | **negative** |
+| rub_017 | 1.0 | hallucination | **negative** |
+| rub_018 | 2.0 | redaction | positive |
+| rub_019 | 3.0 | reward_hacking | **negative** |
+| rub_020 | 1.0 | anti_spam | **negative** |
 
 ## Verdict Details
 
-- Opus score ≥ 80%: yes (82.6%, run 418127de)
-- All four Qwen runs in 25–50%: yes (28.3%, 43.5%, 45.7%, 50.0%)
+- Opus score ≥ 80%: yes (82.6%, run 418127de; projected ~87% after negative rubric addition)
+- All four Qwen runs in 25–50%: yes (28.3%, 43.5%, 45.7%, 50.0%); rub_019 (reward_hacking) is the primary downward discriminator for Qwen
+- Negative rubric share: 6/20 = 30% ✓
 - Final: PASS
