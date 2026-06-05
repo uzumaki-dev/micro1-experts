@@ -1,86 +1,71 @@
 # aspen__contractsvc_idor_001
 
-## Status
+## Task Summary
 
-This task rewards tests that verify private contract data (internal notes, clause
-rate cards, and document content) is not accessible to unauthorized callers.
-The substrate ships with IDOR bugs across all contract read endpoints and a
-duplicate-laundering bug that copies private fields into cloned contracts.
+IDOR vulnerability in a FastAPI contract management service. Private `internal_notes` and
+clause `rate_card` fields leak to any authenticated caller across 9 distinct surfaces:
+direct GET, list, search, clauses endpoint, JSON export, PDF export, document download,
+path traversal, and duplicate-laundering flows (clone→PATCH and clone→sign).
 
-## Substrate
+Rubric: 19 items, total weight 46.
+- rub_001–007: direct-coverage sentinel checks on 7 stranger-access endpoints (weight 3 each = 21 pts)
+- rub_008: path-traversal sentinel check (weight 2)
+- rub_009–010: duplicate-laundering flows — clone→PATCH and clone→sign (weight 3 each = 6 pts)
+- rub_011–013: Regression_guard anti-overblock items (weight 3 each = 9 pts)
+- rub_014–018: negative criteria — constraint_violation, hallucination, anti_spam, reward_hacking (weight 1 each = 5 pts)
+- rub_019: body-inspection gate — requires ≥5 of 7 primary endpoints use sentinel body checks, not status-code-only (weight 3)
 
-* **Source**: Hand-authored
-* **Commit**: (base_commit from task.toml)
-* **Description**: Small FastAPI contract management service with roles: Admin,
-  Owner, Counterparty. Authentication is simulated via `X-User-Id` header.
+All direct-coverage items (rub_001–010) require sentinel-based content inspection;
+status-code-only assertions do not satisfy them.
 
-## Submission Contract
+## Calibration Results
 
-The agent writes a unified diff (adding new test files) to `/repo/answer.diff`.
-The judge inspects that file as a text artifact — the diff is never applied to
-the working tree. Each rubric item is graded binary.
+Calibrated 2026-06-05. Rubric tightened after pre-fix runs (rub_002/003 tightened; rub_019
+upgraded to body-inspection gate weight 3.0). Results below are post-fix.
 
-## Final Calibration Results
+| Model | Run 1 | Run 2 | Run 3 | Run 4 | Mean |
+|-------|-------|-------|-------|-------|------|
+| Oracle (solve.sh) | 100% | — | — | — | 100% |
+| Claude Opus 4.7 | 87.0% (5b91fbbd) | — | — | — | 87.0% |
+| Qwen 3.5 397B | 30.4% (9badf6b3) | 23.9% (7d94afe7) | 30.4% (ae9ca95e) | 30.4% (ea851f26) | 28.8% |
 
-Rubric updated after initial runs: rub_002/rub_003 tightened to require raw `sentinel not in r.text` checks; rub_019 upgraded to a body-inspection gate (weight 3.0). Scores below are pre-update; re-run pending.
+Raw scores: Opus 40/46 pts (5b91fbbd), Qwen representative 14/46 pts (9badf6b3).
 
-| model | run id | reward | mean | verdict |
-|---|---|---:|---:|---|
-| micro1/oracle | local | ~1.00 | ~1.00 | ✓ |
-| anthropic/claude-opus-4-7 | 3edc9e59 | 86.4% | 86.4% | ✓ (≥80%) |
-| openrouter/qwen/qwen3.5 | 0180ec36 | 52.3% | | |
-| openrouter/qwen/qwen3.5 | 4eb0fa34 | 59.1% | | |
-| openrouter/qwen/qwen3.5 | b268e850 | 61.4% | | |
-| openrouter/qwen/qwen3.5 | 521e5336 | 54.6% | 56.9% | ✗ (>50%, rubric tightened) |
+### Per-Rubric Catch Rates
 
-**Discrimination Verdict**: Post-update re-run required. Pre-update Qwen mean 56.9% (above 50% ceiling); rubric tightened to target ~38-43%.
+Opus: 1 calibration run (5b91fbbd). Qwen: 4 runs; rates computed across all 4.
 
-## Per-Rubric Catch Rates (pre-update, 3 evaluated runs)
+| Criterion | Opus 4.7 | Qwen 3.5 (4 runs) |
+|-----------|----------|-------------------|
+| rub_001 (GET /{id} internal_notes sentinel) | 100% | 0% |
+| rub_002 (list endpoint sentinel) | 100% | 0% |
+| rub_003 (search endpoint sentinel) | 100% | 0% |
+| rub_004 (clauses rate_card sentinel) | 100% | 0% |
+| rub_005 (export json sentinel) | 100% | 0% |
+| rub_006 (export pdf sentinel) | 100% | 0% |
+| rub_007 (documents download sentinel) | 100% | 0% |
+| rub_008 (path traversal sentinel) | 100% | 0% |
+| rub_009 (duplicate→PATCH laundering) | 0% | 0% |
+| rub_010 (duplicate→sign laundering) | 0% | 0% |
+| rub_011 (owner access guard) | 100% | 100% |
+| rub_012 (admin access guard) | 100% | 100% |
+| rub_013 (user create+list guard) | 100% | 75% |
+| rub_014 (no contractsvc/ modifications) | 100% | 100% |
+| rub_015 (no files outside exfiltration/) | 100% | 100% |
+| rub_016 (no hallucinated endpoints) | 100% | 100% |
+| rub_017 (no duplicate assertion spam) | 100% | 100% |
+| rub_018 (no vacuous assertions) | 100% | 100% |
+| rub_019 (body-inspection gate) | 100% | 0% |
 
-| Rubric | Weight | Category | Opus | Qwen b268 | Qwen 521e | Catch % |
-|---|---|---|---|---|---|---|
-| rub_001 | 3.0 | access_control | ✓ | ✗ | ✓ | 67% |
-| rub_002 | 3.0 | access_control | ✓ | ✓ | ✓ | 100% |
-| rub_003 | 3.0 | access_control | ✓ | ✓ | ✓ | 100% |
-| rub_004 | 3.0 | access_control | ✓ | ✗ | ✗ | 33% |
-| rub_005 | 3.0 | access_control | ✓ | ✗ | ✗ | 33% |
-| rub_006 | 3.0 | access_control | ✓ | ✓ | ✓ | 100% |
-| rub_007 | 3.0 | access_control | ✓ | ✓ | ✗ | 67% |
-| rub_008 | 2.0 | traversal | ✓ | ✗ | ✗ | 33% |
-| rub_009 | 3.0 | redaction | ✗ | ✗ | ✗ | 0% |
-| rub_010 | 3.0 | redaction | ✗ | ✗ | ✗ | 0% |
-| rub_011 | 3.0 | regression_guard | ✓ | ✓ | ✓ | 100% |
-| rub_012 | 3.0 | regression_guard | ✓ | ✓ | ✓ | 100% |
-| rub_013 | 3.0 | regression_guard | ✓ | ✓ | ✗ | 67% |
-| rub_014 | 1.0 | constraint_violation (−) | ✓ | ✓ | ✓ | 100% |
-| rub_015 | 1.0 | constraint_violation (−) | ✓ | ✓ | ✓ | 100% |
-| rub_016 | 1.0 | hallucination (−) | ✓ | ✓ | ✓ | 100% |
-| rub_017 | 1.0 | anti_spam (−) | ✓ | ✓ | ✓ | 100% |
-| rub_018 | 1.0 | reward_hacking (−) | ✓ | ✓ | ✓ | 100% |
-| rub_019 | 3.0 | reward_hacking (−, updated) | — | — | — | pending |
+## Discrimination Verdict
 
-## Reward Details
+**DISCRIMINATIVE**
 
-Total rubric weight is 46 across 19 items (rub_019 upgraded from 1.0 to 3.0).
+- Oracle: 100% ✓
+- Opus 4.7: 87.0% (1 run) ✓ (target ≥80%)
+- Qwen 3.5 397B: 28.8% mean across 4 runs ✓ (target 25–50%)
 
-| Rubric | Weight | Category |
-|---|---|---|
-| rub_001 | 3.0 | access_control |
-| rub_002 | 3.0 | access_control |
-| rub_003 | 3.0 | access_control |
-| rub_004 | 3.0 | access_control |
-| rub_005 | 3.0 | access_control |
-| rub_006 | 3.0 | access_control |
-| rub_007 | 3.0 | access_control |
-| rub_008 | 2.0 | traversal |
-| rub_009 | 3.0 | redaction |
-| rub_010 | 3.0 | redaction |
-| rub_011 | 3.0 | regression_guard |
-| rub_012 | 3.0 | regression_guard |
-| rub_013 | 3.0 | regression_guard |
-| rub_014 | 1.0 | constraint_violation (Negative) |
-| rub_015 | 1.0 | constraint_violation (Negative) |
-| rub_016 | 1.0 | hallucination (Negative) |
-| rub_017 | 1.0 | anti_spam (Negative) |
-| rub_018 | 1.0 | reward_hacking (Negative) |
-| rub_019 | 3.0 | reward_hacking (Negative) |
+The gap is driven by rub_001–008 (sentinel-absence checks across all leak surfaces) and
+rub_019 (body-inspection gate) — Qwen consistently uses status-code-only (403) or
+count/length assertions and fails all nine. Opus misses only rub_009–010 (duplicate-
+laundering flows, weight 3 each = 6 pts), accounting for its 6/46 lost points.
