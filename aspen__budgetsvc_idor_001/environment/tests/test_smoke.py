@@ -88,7 +88,7 @@ def test_owner_exports_own_budget_json(client):
     budget_id = r.json()["id"]
 
     r2 = client.get(f"/budgets/{budget_id}/export",
-                    params={"format": "json"}, headers=_h("alice"))
+                    params={"export_format": "json"}, headers=_h("alice"))
     assert r2.status_code == 200
 
 
@@ -104,7 +104,7 @@ def test_owner_exports_own_budget_csv(client):
     budget_id = r.json()["id"]
 
     r2 = client.get(f"/budgets/{budget_id}/export",
-                    params={"format": "csv"}, headers=_h("alice"))
+                    params={"export_format": "csv"}, headers=_h("alice"))
     assert r2.status_code == 200
     assert "CSV Budget" in r2.text
 
