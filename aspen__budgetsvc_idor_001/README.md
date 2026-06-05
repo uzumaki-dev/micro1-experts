@@ -12,7 +12,7 @@ laundering flow does not inherit private fields into the attacker's copy; and
 ## Substrate
 
 * **Source**: Hand-authored FastAPI service (~175 LOC)
-* **Commit**: FILL_AFTER_DOCKER_BUILD
+* **Commit**: f19f6a3cadd47e2a1c25caad6c542060b3c46ffa
 * **Description**: In-memory multi-tenant budget API. Identity via `X-User-Id` header.
   Budgets carry `budget_memo`, `fiscal_code`, per-item `allocation_code`, and `attachments`
   (file map). Endpoints: POST/GET/PATCH/search/export/items/attachments/clone/submit.
