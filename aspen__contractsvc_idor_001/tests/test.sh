@@ -40,5 +40,5 @@ cp -f "/repo/answer.diff" /logs/artifacts/answer.diff 2>/dev/null || true
 cp -f "/repo/notes.md" /logs/artifacts/notes.md 2>/dev/null || true
 
 # Run RewardKit — reads agent_judge.toml + prompt.md, writes reward.json
-uvx --python 3.13 --from 'harbor-rewardkit[all]' rewardkit /tests --max-concurrent-agent 1 \
+uvx --python 3.13 --from 'harbor-rewardkit[all]' rewardkit /tests/review --max-concurrent-agent 1 \
     > >(tee -a "$TEST_LOG") 2> >(tee -a "$TEST_LOG" >&2)

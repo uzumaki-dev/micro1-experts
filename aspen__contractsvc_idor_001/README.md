@@ -22,17 +22,46 @@ the working tree. Each rubric item is graded binary.
 
 ## Final Calibration Results
 
-| model | runs | rewards | mean | verdict |
-|---|---:|---|---:|---|
-| micro1/oracle | 1 | TBD | TBD | pending |
-| anthropic/claude-opus-4-7 | 1 | TBD | TBD | pending |
-| openrouter/qwen/qwen3.5 | 4 | TBD | TBD | pending |
+Rubric updated after initial runs: rub_002/rub_003 tightened to require raw `sentinel not in r.text` checks; rub_019 upgraded to a body-inspection gate (weight 3.0). Scores below are pre-update; re-run pending.
 
-**Discrimination Verdict**: Pending calibration.
+| model | run id | reward | mean | verdict |
+|---|---|---:|---:|---|
+| micro1/oracle | local | ~1.00 | ~1.00 | ✓ |
+| anthropic/claude-opus-4-7 | 3edc9e59 | 86.4% | 86.4% | ✓ (≥80%) |
+| openrouter/qwen/qwen3.5 | 0180ec36 | 52.3% | | |
+| openrouter/qwen/qwen3.5 | 4eb0fa34 | 59.1% | | |
+| openrouter/qwen/qwen3.5 | b268e850 | 61.4% | | |
+| openrouter/qwen/qwen3.5 | 521e5336 | 54.6% | 56.9% | ✗ (>50%, rubric tightened) |
+
+**Discrimination Verdict**: Post-update re-run required. Pre-update Qwen mean 56.9% (above 50% ceiling); rubric tightened to target ~38-43%.
+
+## Per-Rubric Catch Rates (pre-update, 3 evaluated runs)
+
+| Rubric | Weight | Category | Opus | Qwen b268 | Qwen 521e | Catch % |
+|---|---|---|---|---|---|---|
+| rub_001 | 3.0 | access_control | ✓ | ✗ | ✓ | 67% |
+| rub_002 | 3.0 | access_control | ✓ | ✓ | ✓ | 100% |
+| rub_003 | 3.0 | access_control | ✓ | ✓ | ✓ | 100% |
+| rub_004 | 3.0 | access_control | ✓ | ✗ | ✗ | 33% |
+| rub_005 | 3.0 | access_control | ✓ | ✗ | ✗ | 33% |
+| rub_006 | 3.0 | access_control | ✓ | ✓ | ✓ | 100% |
+| rub_007 | 3.0 | access_control | ✓ | ✓ | ✗ | 67% |
+| rub_008 | 2.0 | traversal | ✓ | ✗ | ✗ | 33% |
+| rub_009 | 3.0 | redaction | ✗ | ✗ | ✗ | 0% |
+| rub_010 | 3.0 | redaction | ✗ | ✗ | ✗ | 0% |
+| rub_011 | 3.0 | regression_guard | ✓ | ✓ | ✓ | 100% |
+| rub_012 | 3.0 | regression_guard | ✓ | ✓ | ✓ | 100% |
+| rub_013 | 3.0 | regression_guard | ✓ | ✓ | ✗ | 67% |
+| rub_014 | 1.0 | constraint_violation (−) | ✓ | ✓ | ✓ | 100% |
+| rub_015 | 1.0 | constraint_violation (−) | ✓ | ✓ | ✓ | 100% |
+| rub_016 | 1.0 | hallucination (−) | ✓ | ✓ | ✓ | 100% |
+| rub_017 | 1.0 | anti_spam (−) | ✓ | ✓ | ✓ | 100% |
+| rub_018 | 1.0 | reward_hacking (−) | ✓ | ✓ | ✓ | 100% |
+| rub_019 | 3.0 | reward_hacking (−, updated) | — | — | — | pending |
 
 ## Reward Details
 
-Total rubric weight is 44 across 19 items.
+Total rubric weight is 46 across 19 items (rub_019 upgraded from 1.0 to 3.0).
 
 | Rubric | Weight | Category |
 |---|---|---|
@@ -54,4 +83,4 @@ Total rubric weight is 44 across 19 items.
 | rub_016 | 1.0 | hallucination (Negative) |
 | rub_017 | 1.0 | anti_spam (Negative) |
 | rub_018 | 1.0 | reward_hacking (Negative) |
-| rub_019 | 1.0 | reward_hacking (Negative) |
+| rub_019 | 3.0 | reward_hacking (Negative) |
