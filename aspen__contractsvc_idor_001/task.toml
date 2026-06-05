@@ -15,7 +15,7 @@ pipeline = "aspen"
 task_type = "test_authoring"
 rubric_only = true
 image_digest = ""
-base_commit = "468eb9b1f826f32cc85eea9f02fa2a2223330c3e"
+base_commit = "420c7e1e66770b929a4dee56fcb2af3047d346ca"
 
 [verifier]
 timeout_sec = 1800.0
