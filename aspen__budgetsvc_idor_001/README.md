@@ -30,14 +30,16 @@ test that would catch this specific issue?
 
 | model | run | reward | mean | verdict |
 |---|---|---:|---:|---|
-| oracle | — | 100.0% | 100.0% | verifier wiring passes |
-| anthropic/claude-opus-4-7 | TBD | TBD | TBD | TBD |
-| openrouter/qwen/qwen3.5-397b-a17b | TBD | | | |
-| openrouter/qwen/qwen3.5-397b-a17b | TBD | | | |
-| openrouter/qwen/qwen3.5-397b-a17b | TBD | | | |
-| openrouter/qwen/qwen3.5-397b-a17b | TBD | TBD | TBD | TBD |
+| anthropic/claude-haiku-4-5-20251001 (oracle) | 501b32a7 | 100.0% | 100.0% | verifier wiring passes |
+| anthropic/claude-opus-4-7 | abe7c465 | 87.2% | 87.2% | passes target (≥80%) |
+| openrouter/qwen/qwen3.5-397b-a17b | 475e4317 | 40.4% | | |
+| openrouter/qwen/qwen3.5-397b-a17b | 0d31b8f8 | 44.7% | | |
+| openrouter/qwen/qwen3.5-397b-a17b | a11f29b5 | 38.3% | | |
+| openrouter/qwen/qwen3.5-397b-a17b | a4efadbd | 44.7% | 42.0% | within target range (25–50%) |
 
-**Discrimination Verdict**: PENDING CALIBRATION
+*One additional run excluded from calibration: 089a1980 (system failure, 0%).*
+
+**Discrimination Verdict**: DISCRIMINATIVE. Opus lands above the 80% floor (87.2%, run abe7c465) and the mean across all four valid Qwen runs is 42.0%, within the 25–50% target band. The primary discrimination lever is rub_019 (reward_hacking: body-inspection requirement) — Opus inspects all 7 primary stranger-access endpoints with sentinel-absence checks, while every Qwen run relied on status-code-only assertions for GET /budgets/{id}, /items, export json, export csv, and attachments. The clone laundering flows (rub_009–011) further separate Opus from Qwen; no Qwen run discovered the chained PATCH/submit/export laundering patterns. rub_001 (GET /budgets/{id} sentinel body check) was missed by all Qwen runs, which substituted status-code-only 403 assertions.
 
 ## Reward Details
 
@@ -68,7 +70,7 @@ Total rubric weight: 47.0 across 20 items (6 negative = 30%).
 
 ## Verdict Details
 
-- Opus score ≥ 80%: TBD
-- Qwen mean in 25–50%: TBD
+- Opus score ≥ 80%: **yes** (87.2%, run abe7c465)
+- Qwen mean in 25–50%: **yes** (42.0% across 4 valid runs: 40.4%, 44.7%, 38.3%, 44.7%)
 - Negative rubric share: 6/20 = 30% ✓
-- Final: **PENDING**
+- Final: **PASS**
