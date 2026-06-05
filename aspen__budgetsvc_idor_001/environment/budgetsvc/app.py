@@ -67,14 +67,14 @@ def get_items(budget_id: str, x_user_id: str = Header(...)):
 @app.get("/budgets/{budget_id}/export")
 def export_budget(
     budget_id: str,
-    format: str = Query("json"),
+    export_format: str = Query("json"),
     x_user_id: str = Header(...),
 ):
     b = store.get(budget_id)
     if b is None:
         raise HTTPException(status_code=404, detail="Not found")
     # BUG: no ownership check
-    if format == "csv":
+    if export_format == "csv":
         output = io.StringIO()
         writer = csv.writer(output)
         writer.writerow([
