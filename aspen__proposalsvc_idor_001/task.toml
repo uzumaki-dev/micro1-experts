@@ -1,0 +1,41 @@
+schema_version = "1.2"
+artifacts = []
+
+[task]
+name = "micro1/aspen__proposalsvc_idor_001"
+description = "Author tests for proposal IDOR — a proposal management service leaks private proposal data to any authenticated user due to missing ownership checks"
+authors = [{ name = "Zeeshan Amir", email = "zeam710@expert.micro1.ai" }]
+keywords = ["idor", "access-control", "proposal", "test-authoring"]
+
+[metadata]
+source = "m1-rl-envs"
+environment_id = "aspen"
+instance_id = "aspen__proposalsvc_idor_001"
+pipeline = "aspen"
+task_type = "test_authoring"
+rubric_only = true
+image_digest = "sha256:FILL_AFTER_UPLOAD"
+base_commit = "ff8030938e77453ed11bd3f355998ea96eccd38d"
+
+[verifier]
+timeout_sec = 1800.0
+
+[verifier.env]
+ANTHROPIC_API_KEY = "${ANTHROPIC_API_KEY:-}"
+OPENAI_API_KEY = "${OPENAI_API_KEY:-}"
+
+[agent]
+timeout_sec = 3600.0
+
+[environment]
+build_timeout_sec = 3600.0
+cpus = 2
+memory_mb = 4096
+storage_mb = 10240
+gpus = 0
+allow_internet = true
+mcp_servers = []
+
+[environment.env]
+
+[solution.env]
