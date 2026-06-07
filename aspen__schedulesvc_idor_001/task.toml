@@ -3,9 +3,9 @@ artifacts = []
 
 [task]
 name = "micro1/aspen__schedulesvc_idor_001"
-description = "Write a test suite that catches IDOR vulnerabilities in a shift-scheduling service — private pay rates, internal notes, and entry rate codes leak to any authenticated caller across 9 distinct surfaces."
+description = "Write a test suite that catches IDOR vulnerabilities in a shift-scheduling service — private pay rates and internal scheduling notes leak to any authenticated caller due to missing ownership checks."
 authors = [{ name = "Zeeshan Amir", email = "zeam710@expert.micro1.ai" }]
-keywords = ["idor", "access-control", "fastapi", "test-authoring", "security"]
+keywords = ["idor", "access-control", "scheduling", "test-authoring", "security"]
 
 [metadata]
 source = "m1-rl-envs"
