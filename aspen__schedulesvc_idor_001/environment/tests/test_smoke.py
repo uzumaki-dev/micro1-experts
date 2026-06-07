@@ -62,7 +62,7 @@ def test_owner_lists_own_schedules(client):
     client.post("/schedules", json={"title": "Roster B"}, headers=_h("alice"))
     r = client.get("/schedules", headers=_h("alice"))
     assert r.status_code == 200
-    assert len(r.json()) >= 2
+    assert len(r.json()) == 2
 
 
 def test_owner_searches_own_schedules(client):
@@ -140,6 +140,7 @@ def test_owner_clones_own_schedule(client):
     clone = r2.json()
     assert clone["owner_id"] == "alice"
     assert clone["id"] != s_id
+    assert clone["title"] == "Template Roster"
 
 
 def test_owner_publishes_own_schedule(client):
@@ -175,4 +176,9 @@ def test_non_admin_lists_schedules(client):
     client.post("/schedules", json={"title": "My Roster"}, headers=_h("bob"))
     r = client.get("/schedules", headers=_h("bob"))
     assert r.status_code == 200
-    assert len(r.json()) >= 1
+    assert len(r.json()) == 1
+
+
+def test_get_nonexistent_schedule_returns_404(client):
+    r = client.get("/schedules/nonexistent-id-12345", headers=_h("alice"))
+    assert r.status_code == 404
