@@ -36,7 +36,8 @@ def list_schedules(x_user_id: str = Header(...)) -> list[Schedule]:
 def search_schedules(
     q: str = Query(""), x_user_id: str = Header(...)
 ) -> list[Schedule]:
-    # BUG: searches across all schedules regardless of ownership
+    # BUG: searches across all schedules regardless of ownership;
+    # also leaks internal_notes content via query-term matching
     q_lower = q.lower()
     return [
         s
@@ -101,7 +102,8 @@ def get_attachment(
     # BUG: no ownership check
     content = s.attachments.get(name)
     if content is None:
-        # BUG: naive path traversal — resolves ../<other_id>/<file> across all schedules
+        # BUG: naive path traversal — discards path prefix, returns first schedule
+        # with a matching filename (filename-wildcard across all schedules)
         parts = name.replace("\\", "/").split("/")
         if len(parts) >= 2:
             other_file = parts[-1]
