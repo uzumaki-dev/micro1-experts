@@ -13,7 +13,7 @@ legitimate owner and admin flows are not over-blocked.
 ## Substrate
 
 * **Source**: Hand-authored FastAPI service (~200 LOC)
-* **Commit**: FILL_AFTER_DOCKER_BUILD
+* **Commit**: `215042e513c5628c9daf811d24fe84bbc87318fc`
 * **Description**: In-memory multi-tenant shift-scheduling API. Identity via
   `X-User-Id` header. Admin identity: `admin`. Schedules carry `internal_notes`,
   `pay_rate`, per-entry `rate_code`, and `attachments` (filename→content map).
