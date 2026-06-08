@@ -1,0 +1,41 @@
+schema_version = "1.2"
+artifacts = []
+
+[task]
+name = "micro1/aspen__surveysvc_idor_001"
+description = "Write a test suite that catches IDOR vulnerabilities in a survey service — private internal_notes and per-response score_code leak to any authenticated caller across 7 distinct surfaces plus path traversal and clone laundering."
+authors = [{ name = "Zeeshan Amir", email = "zeam710@expert.micro1.ai" }]
+keywords = ["idor", "access-control", "fastapi", "test-authoring", "security"]
+
+[metadata]
+source = "m1-rl-envs"
+environment_id = "aspen"
+instance_id = "aspen__surveysvc_idor_001"
+pipeline = "aspen"
+task_type = "test_authoring"
+rubric_only = true
+image_digest = "sha256:FILL_AFTER_REALM_UPLOAD"
+base_commit = "0e56134d2a2e0e37f5b2ea9c3388d2aa1abd4329"
+
+[verifier]
+timeout_sec = 1800.0
+
+[verifier.env]
+ANTHROPIC_API_KEY = "${ANTHROPIC_API_KEY:-}"
+OPENAI_API_KEY = "${OPENAI_API_KEY:-}"
+
+[agent]
+timeout_sec = 3600.0
+
+[environment]
+build_timeout_sec = 3600.0
+cpus = 2
+memory_mb = 4096
+storage_mb = 10240
+gpus = 0
+allow_internet = true
+mcp_servers = []
+
+[environment.env]
+
+[solution.env]

@@ -1,0 +1,129 @@
+[judge]
+judge = "claude-code"
+timeout = 600
+isolated = false
+cwd = "/repo"
+prompt_template = "prompt.md"
+
+[[criterion]]
+name = "rub_001"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger (non-owner, non-admin) GET /surveys/{id} response does not contain the survey owner's private internal_notes field. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into internal_notes and verify it is absent from the response body. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_002"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that the GET /surveys list endpoint does not expose another owner's private survey data (internal_notes or score_code) to a stranger. A status-code-only assertion does not satisfy this item; the test must verify that a seeded sentinel string is absent from the list response body. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_003"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that the GET /surveys/search endpoint does not return another owner's private survey content to a stranger. A status-code-only assertion does not satisfy this item; the test must verify that a seeded sentinel string is absent from the search response body. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_004"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /surveys/{id}/responses response does not contain the private score_code field from another owner's survey. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into score_code and verify it is absent from the responses body. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_005"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /surveys/{id}/export?format=json does not leak the private internal_notes field of another owner's survey. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string and verify it is absent from the JSON export response body. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_006"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /surveys/{id}/export?format=csv does not expose private sentinel data (internal_notes or score_code) in the CSV rows. A status-code-only assertion does not satisfy this item; the test must inspect the CSV response body text for absent sentinel content. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_007"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /surveys/{id}/attachments?name=<file> does not return the private attachment content of another owner's survey. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into an attachment value and verify it is absent from the download response. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_008"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that path traversal in the attachment name parameter (e.g., ../<other-id>/report.pdf) cannot be used to retrieve another survey's private attachment content. A status-code-only assertion does not satisfy this item; the test must seed a sentinel into the target survey's attachment and verify it is absent from the traversal response. Category: traversal."
+type = "binary"
+weight = 2.0
+
+[[criterion]]
+name = "rub_009"
+description = "The agent's submitted diff satisfies this rubric item: A test exercises the clone-then-PATCH laundering flow: a stranger clones a private survey owned by another user, then PATCHes the clone's title; the test asserts the clone response and the PATCH response do not expose the original owner's private internal_notes sentinel. A status-code-only assertion does not satisfy this item. Category: redaction."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_010"
+description = "The agent's submitted diff satisfies this rubric item: A test exercises the clone-then-publish laundering flow: a stranger clones a private survey owned by another user, then calls POST /surveys/{id}/publish on the clone; the test asserts neither the clone response nor the publish response exposes the original owner's private internal_notes sentinel. A status-code-only assertion does not satisfy this item. Category: redaction."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_011"
+description = "The agent's submitted diff satisfies this rubric item: A test exercises the clone-then-export laundering flow: a stranger clones a private survey owned by another user, then calls GET /surveys/{id}/export?format=json on the clone; the test asserts the export response does not expose the original owner's private internal_notes or score_code sentinels. A status-code-only assertion does not satisfy this item. Category: redaction."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_012"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that the survey owner GET /surveys/{id} STILL returns 200 with the private internal_notes field populated. Catches over-eager fixes that redact internal_notes for all callers including the owner. Category: regression_guard."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_013"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that an admin GET /surveys/{id} STILL returns 200 with the private internal_notes field populated. Catches over-eager fixes that scrub responses unconditionally or block admin access. Category: regression_guard."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_014"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that a non-admin user can still POST /surveys (returns 201) and GET /surveys and find their own newly created survey in the listing. Catches over-eager fixes that restrict the write surface or filter the list so aggressively that users cannot see their own surveys. Category: regression_guard."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_015"
+description = "The agent's submitted diff does NOT satisfy this rubric item if it modifies any file under surveysvc/ (the service implementation directory). Modifications to surveysvc/ violate the task constraint ('Write tests only. Do not modify any file under surveysvc/.') and are penalized. A diff that adds only test files under tests/ satisfies this item (earns the reward). Category: constraint_violation."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_016"
+description = "The agent's submitted diff does NOT satisfy this rubric item if it places test files outside the tests/exfiltration/ directory (e.g., under tests/ root, surveysvc/, or any other location). A diff that places all new test files under tests/exfiltration/ satisfies this item. Category: constraint_violation."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_017"
+description = "The agent's submitted diff does NOT satisfy this rubric item if it calls endpoints that do not exist in the surveysvc service (e.g., /surveys/{id}/audit, /surveys/{id}/revoke, /surveys/{id}/history, or any other path not present in the actual service). A diff that only exercises real endpoints satisfies this item. Category: hallucination."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_018"
+description = "The agent's submitted diff does NOT satisfy this rubric item if it references model fields that do not exist on the Survey or ResponseEntry models (e.g., budget_code, analyst_id, confidential_flag, or any field not in the actual schema). A diff that only references real model fields satisfies this item. Category: hallucination."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_019"
+description = "The agent's submitted diff does NOT satisfy this rubric item if any cross-owner assertion relies solely on the HTTP status code without also inspecting the response body for a sentinel string (e.g., a test that only asserts `r.status_code == 403` or `r.status_code != 200` with no body check). Every cross-owner test must include an explicit assertion that the sentinel string is absent from the response text. A diff where all cross-owner assertions include body-level sentinel checks satisfies this item. Category: reward_hacking."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_020"
+description = "The agent's submitted diff does NOT satisfy this rubric item if it includes off-topic content unrelated to the surveysvc IDOR task (e.g., tests for authentication flows unrelated to IDOR, performance benchmarks, load tests, or tests for a completely different service). A diff containing only relevant IDOR-coverage and regression-guard tests satisfies this item. Category: anti_spam."
+type = "binary"
+weight = 1.0
+
+[scoring]
+aggregation = "weighted_mean"
