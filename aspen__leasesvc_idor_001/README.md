@@ -1,14 +1,26 @@
 # aspen__leasesvc_idor_001
 
-## Status
+## Task Summary
 
-Lease management service leaks private landlord notes and per-clause assessment codes
-to any authenticated user because read, list, search, export, clauses, and document
-endpoints perform no ownership checks. The task rewards tests that verify:
+IDOR vulnerability in a FastAPI lease-management service. Private `private_notes` and
+per-clause `clause_code` fields leak to any authenticated caller across 8 distinct
+surfaces: direct GET, list, search, JSON export, CSV export, document download,
+clone laundering, and path traversal. The task rewards tests that verify:
 (1) a stranger cannot read another owner's `private_notes`, clause `clause_code`,
-or document bytes; (2) a clone-then-mutate laundering flow does not inherit
-private fields into the attacker's copy; and (3) legitimate owner and admin
-flows are not over-blocked.
+or attachment bytes; (2) clone-then-mutate laundering flows do not inherit private
+fields into the attacker's copy; and (3) legitimate owner and admin flows are
+not over-blocked.
+
+Rubric: 20 items, total weight 51.0.
+- rub_001–007: direct-coverage access_control sentinel checks (weight 3 each = 21 pts)
+- rub_008: path-traversal sentinel check (weight 2)
+- rub_009–011: clone laundering redaction checks (weight 3 each = 9 pts)
+- rub_012–014: regression_guard anti-overblock items (weight 3 each = 9 pts)
+- rub_015–020: negative criteria — constraint_violation, hallucination, reward_hacking,
+  anti_spam (weights 3/1/1/1/3/1 = 10 pts)
+
+All direct-coverage items require sentinel-based content inspection; status-code-only
+assertions do not satisfy rub_001–007.
 
 ## Substrate
 
@@ -20,7 +32,7 @@ flows are not over-blocked.
   Endpoints: POST/GET/PATCH/search/export/clauses/documents/clone/renew/share.
   All read endpoints ship without ownership checks. Clone copies private fields
   verbatim. Path traversal in the documents endpoint allows cross-lease
-  file reads.
+  file reads. PATCH and renew are correctly protected (return 403 for non-owners).
 
 ## Submission Contract
 
@@ -31,30 +43,29 @@ diff include a test that would catch this specific issue?
 
 ## Calibration Results
 
-Initial calibration runs completed 2026-06-08. Two Opus runs at 76.5% (96202286, 97bb6898)
-and one 0% Opus run (351c24aa, agent failure — excluded). Qwen runs: 37.3% (09342f89),
-43.1% (cf246574). rub_019 was subsequently narrowed to exempt correctly-protected endpoints
-(PATCH, renew) so Opus tests against those endpoints no longer fail the criterion; rubric
-updated and re-submitted for re-calibration.
+Calibrated 2026-06-08. Qwen run 272664fa (0%) excluded as a container/agent failure.
+Opus column from run 2410b527 (82.4%); Qwen catch rates derived from 4 valid runs.
 
 | Model | Run 1 | Run 2 | Run 3 | Run 4 | Mean |
 |-------|-------|-------|-------|-------|------|
 | Oracle (solve.sh) | 100% | — | — | — | 100% |
-| Claude Opus 4.7 (pre-fix) | 76.5% (96202286) | 76.5% (97bb6898) | — | — | 76.5% |
-| Qwen 3.5 397B | 37.3% (09342f89) | 43.1% (cf246574) | — | — | 40.2% |
+| Claude Opus 4.7 | 82.4% (2410b527) | — | — | — | 82.4% |
+| Qwen 3.5 397B | 49.0% (bd050217) | 43.1% (54b50bf2) | 43.1% (a541983a) | 31.4% (173bbe61) | 41.7% |
 
-*Post-fix Opus calibration pending.*
+Raw scores: Opus 42/51 pts (2410b527), Qwen ~22/51 pts mean.
 
-### Per-Rubric Catch Rates (pre-fix, Opus run 96202286)
+### Per-Rubric Catch Rates
 
-| Criterion | Opus 4.7 | Qwen 3.5 (2 runs) |
+Opus: 1 calibration run (2410b527). Qwen: 4 valid runs; catch rate = fraction of runs scoring 1 per item.
+
+| Criterion | Opus 4.7 | Qwen 3.5 (4 runs) |
 |-----------|----------|-------------------|
 | rub_001 (GET /{id} private_notes sentinel) | 100% | 0% |
-| rub_002 (list private_notes/clause_code sentinel) | 100% | 100% |
-| rub_003 (search sentinel — private_notes leak) | 100% | 100% |
+| rub_002 (list private_notes/clause_code sentinel) | 100% | 75% |
+| rub_003 (search sentinel — private_notes leak) | 100% | 75% |
 | rub_004 (clauses clause_code sentinel) | 100% | 0% |
 | rub_005 (export JSON private_notes sentinel) | 100% | 0% |
-| rub_006 (export CSV sentinel) | 100% | 0% |
+| rub_006 (export CSV sentinel) | 100% | 25% |
 | rub_007 (documents download sentinel) | 100% | 0% |
 | rub_008 (path traversal attachment sentinel) | 100% | 0% |
 | rub_009 (clone→PATCH private_notes absent) | 0% | 0% |
@@ -67,14 +78,25 @@ updated and re-submitted for re-calibration.
 | rub_016 (files only under tests/exfiltration/) | 100% | 100% |
 | rub_017 (no hallucinated endpoints) | 100% | 100% |
 | rub_018 (no hallucinated model fields) | 100% | 100% |
-| rub_019 (no status-code-only on leaking endpoints) | 0%* | 0% |
+| rub_019 (no status-code-only on leaking endpoints) | 100% | 0% |
 | rub_020 (no off-topic spam) | 100% | 100% |
 
-\* Opus failed rub_019 because test_patch_blocks_non_owner and test_renew_blocks_non_owner
-had status-code-only assertions on correctly-protected endpoints. The criterion was narrowed
-post-calibration to exempt tests on PATCH/renew (which already return 403); Qwen
-discrimination is preserved because Qwen writes status-code-only tests on the actual
-leaking endpoints (GET /{id}, /clauses, /export, /documents).
+## Discrimination Verdict
+
+**DISCRIMINATIVE**
+
+- Oracle: 100% ✓
+- Opus 4.7: 82.4% (1 run) ✓ (target ≥80%)
+- Qwen 3.5 397B: 41.7% mean across 4 runs ✓ (target 25–50%, range 31.4–49.0%)
+
+The gap is driven by rub_001/rub_004–007 (sentinel-absence checks on direct
+read/clauses/export/document surfaces — Qwen writes status-code-only assertions on these
+and scores 0% across all runs) and rub_019 (reward_hacking, weight 3.0 — Qwen fails all
+4 runs, the single largest discrimination lever). rub_008 (path traversal) and
+rub_009–011 (clone laundering) are missed by both models; laundering flows are the
+hardest class and account for Opus's 9-point gap from a perfect score. rub_002/003
+show partial Qwen success (75%) via empty-list body assertions, and rub_006 (CSV export)
+shows one Qwen run (bd050217) adding an unconditional body check (25%).
 
 ## Reward Details
 
