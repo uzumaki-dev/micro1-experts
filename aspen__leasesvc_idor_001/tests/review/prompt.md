@@ -10,7 +10,9 @@ repo is checked out at `/repo` at the task's `base_commit`. The service under te
 identified by the `X-User-Id` header; leases have an owner, optional collaborators, a
 `visibility` of "private" or "public", private `private_notes`, per-clause `clause_code`
 fields, and document attachment bytes. The shipped code does not enforce ownership checks
-on any read, list, search, export, clauses, or document endpoint.
+on any read, list, search, export, clauses, or document endpoint. PATCH /leases/{id} and
+POST /leases/{id}/renew are correctly protected (they return 403 for non-owners) and are
+not part of the vulnerability surface.
 
 ## Behavioral prompt the agent received
 
