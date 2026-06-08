@@ -13,7 +13,7 @@ flows are not over-blocked.
 ## Substrate
 
 * **Source**: Hand-authored FastAPI service (~200 LOC)
-* **Commit**: `FILL_AFTER_DOCKER_BUILD`
+* **Commit**: `b21cb61673d1492da33f53ea8f5eb21a1f574828`
 * **Description**: In-memory multi-tenant lease API. Identity via
   `X-User-Id` header. Admin identity: `admin`. Leases carry `private_notes`,
   per-clause `clause_code`, and `attachments` (filename→content map).
