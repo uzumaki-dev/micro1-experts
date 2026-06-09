@@ -28,22 +28,22 @@ test that would catch this specific issue?
 
 ## Calibration Results
 
-Calibrated 2026-06-05. Opus column from run cc601aca (87.2%); Qwen catch rates derived
-from all 4 valid runs (high variance — one run hit 57.5%, three clustered at 40–45%).
+Calibrated 2026-06-10. Opus column from run 0f1287a3 (83.0%); Qwen catch rates derived
+from all 4 valid runs (moderate variance — 40.4–53.2%, σ≈5pp).
 
 | Model | Run 1 | Run 2 | Run 3 | Run 4 | Mean |
 |-------|-------|-------|-------|-------|------|
-| Oracle (haiku) | 100% (99844f34) | — | — | — | 100% |
-| Claude Opus 4.7 | 87.2% (cc601aca) | — | — | — | 87.2% |
-| Qwen 3.5 397B | 44.7% (39ea13a7) | 57.5% (13903027) | 44.7% (ced8ac40) | 40.4% (6469a0dc) | 46.8% |
+| Oracle (haiku) | 100% (2e8a0760) | — | — | — | 100% |
+| Claude Opus 4.7 | 83.0% (0f1287a3) | — | — | — | 83.0% |
+| Qwen 3.5 397B | 46.8% (70134dd1) | 53.2% (330bd303) | 40.4% (99c4c9cf) | 40.4% (48e19aba) | 45.2% |
 
-Raw scores: Opus 41/47 pts (cc601aca), Qwen 19–27/47 pts across runs.
+Raw scores: Opus 39/47 pts (0f1287a3), Qwen 19–25/47 pts across valid runs.
 
-*Two Qwen runs excluded (system failure, 0%): 88ebebcd and 37a538b2.*
+*One Qwen run excluded (system failure, 0%): f7834ee1.*
 
 ### Per-Rubric Catch Rates
 
-Opus: 1 calibration run (cc601aca). Qwen: 4 runs, high variance (40.4–57.5%, σ≈7pp).
+Opus: 1 calibration run (0f1287a3). Qwen: 4 valid runs, moderate variance (40.4–53.2%, σ≈5pp).
 
 | Criterion | Opus 4.7 | Qwen 3.5 |
 |-----------|----------|----------|
@@ -54,7 +54,7 @@ Opus: 1 calibration run (cc601aca). Qwen: 4 runs, high variance (40.4–57.5%, �
 | rub_005 (JSON export — internal_notes absent unconditionally) | 100% | 0% |
 | rub_006 (CSV export — sentinel absent in rows) | 100% | 25% |
 | rub_007 (receipts download — receipt sentinel absent unconditionally) | 100% | 0% |
-| rub_008 (path traversal — receipt sentinel absent) | 100% | 75% |
+| rub_008 (path traversal — receipt sentinel absent) | 100% | 0% |
 | rub_009 (clone-then-PATCH — internal_notes absent from PATCH response) | 0% | 0% |
 | rub_010 (clone-then-submit — internal_notes absent from submit response) | 0% | 0% |
 | rub_011 (clone-then-export — internal_notes absent from JSON export) | 0% | 0% |
@@ -64,8 +64,8 @@ Opus: 1 calibration run (cc601aca). Qwen: 4 runs, high variance (40.4–57.5%, �
 | rub_015 (no files outside tests/exfiltration/) | 100% | 100% |
 | rub_016 (no hallucinated endpoints) | 100% | 100% |
 | rub_017 (no hallucinated fields) | 100% | 100% |
-| rub_018 (clone response — internal_notes absent from clone body) | 100% | 0% |
-| rub_019 (no status-code-only cross-owner assertions) | 100% | 25% |
+| rub_018 (clone response — internal_notes absent from clone body) | 0% | 0% |
+| rub_019 (no status-code-only cross-owner assertions) | 100% | 50% |
 | rub_020 (no off-topic spam) | 100% | 100% |
 
 ## Discrimination Verdict
@@ -73,10 +73,10 @@ Opus: 1 calibration run (cc601aca). Qwen: 4 runs, high variance (40.4–57.5%, �
 **DISCRIMINATIVE**
 
 - Oracle: 100% ✓
-- Opus 4.7: 87.2% (1 run) ✓ (target ≥80%)
-- Qwen 3.5 397B: 46.8% mean across 4 runs ✓ (target 25–50%)
+- Opus 4.7: 83.0% (1 run) ✓ (target ≥80%)
+- Qwen 3.5 397B: 45.2% mean across 4 valid runs ✓ (target 25–50%)
 
-The primary discrimination lever is the per-endpoint sentinel body check requirement (rub_001, rub_004–rub_007, rub_018) and rub_019 (no status-code-only cross-owner assertions). Opus unconditionally inspects all 7 primary stranger-access endpoints for absent sentinel content; Qwen consistently falls back to `assert r.status_code == 403` for direct-access tests, passing only list and search (rub_002/003) via count or ownership-exclusion checks. The clone laundering flows (rub_009–011) are missed by all models — these items provide future discrimination headroom. One Qwen run (13903027, 57.5%) is an outlier that also satisfied rub_006 (CSV body inspection) and rub_019 (mixed body/status strategy); the remaining three runs cluster at 40–45%, giving a 4-run mean of 46.8% within the target band.
+The primary discrimination lever is rub_001, rub_004–rub_007 (unconditional sentinel body checks on each stranger-access endpoint) and rub_019 (no status-code-only cross-owner assertions). Opus seeds a sentinel into every private field and verifies its absence unconditionally from all 7 direct-access responses; Qwen consistently falls back to `assert r.status_code == 403` for single-object access (GET /{id}, /entries, /export json, /receipts), passing only list (rub_002) and search (rub_003) via count/ownership-exclusion body checks. Two of four Qwen runs also triggered rub_019 (reward_hacking), losing 3 additional weight points each. The clone laundering flows (rub_009–011, rub_018) and path traversal (rub_008) are now missed by all models, providing future headroom. One Qwen run (f7834ee1, 0%) was a system failure and excluded.
 
 ## Reward Details
 
