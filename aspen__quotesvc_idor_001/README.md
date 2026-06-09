@@ -10,48 +10,61 @@ verbatim into the forker's own quote, enabling a laundering chain (fork → PATC
 A path-traversal bug in the attachment endpoint allows crossing quote boundaries via
 `../<other-id>/` in the `name` parameter.
 
-Rubric: 20 items, total weight 51.
-- rub_001–007: direct-coverage sentinel checks, access_control (weight 3 each = 21 pts)
-- rub_008: path-traversal check, traversal (weight 2)
-- rub_009–010: laundering flows fork→PATCH and fork→send (weight 3 each = 6 pts)
-- rub_011–013: Regression_guard anti-overblock items (weight 3 each = 9 pts)
-- rub_014: sentinel sweep quality item (weight 3)
-- rub_015–020: negative criteria — constraint_violation, hallucination, reward_hacking, anti_spam (weight 3+1+3+1+1+1 = 10 pts)
+The agent must write a sentinel-based test suite covering 10 direct-coverage surfaces
+and 3 anti-overblock regression guards.
+
+## Rubric
+
+20 binary criteria, total weight 51.
+
+| Category | Items | Weight |
+|----------|-------|--------|
+| access_control | rub_001–rub_007 | 21 |
+| traversal | rub_008 | 2 |
+| redaction (laundering) | rub_009–rub_010 | 6 |
+| regression_guard | rub_011–rub_013 | 9 |
+| test_quality | rub_014 | 3 |
+| constraint_violation (negative) | rub_015, rub_019 | 4 |
+| hallucination (negative) | rub_016 | 1 |
+| reward_hacking (negative) | rub_017, rub_018 | 4 |
+| anti_spam (negative) | rub_020 | 1 |
 
 All direct-coverage items require sentinel-based content inspection; status-code-only
 assertions do not satisfy rub_001–007.
 
 ## Calibration Results
 
-Calibrated 2026-06-09. Qwen runs b527977e, 67bf232f, 9528e24d (0% each) excluded as
-failed submissions (no diff produced). Run 900e0674 (66.7%) excluded as outlier.
-Opus column from run e468c88a (88.2%); Qwen catch rates derived from 4 representative
-runs: 7c24f447 (47.1%), b00d4e26 (41.2%), 1af7ef43 (52.9%), d4d668ad (47.1%).
+Calibrated 2026-06-09. Qwen runs 123e92b0, 1ab9c20a (0% each) excluded as failed
+submissions (no diff produced). Opus per-rubric rates derived from representative run
+487f1695 (88.2%); run 3075fe93 (76.5%) missed rub_005 and rub_014 because its agent
+used a status-block helper without unconditional body inspection on the JSON export
+endpoint. Qwen catch rates from 4 representative runs: d281ec6a (47.1%), cd49174d
+(35.3%), 87a9d53f (35.3%), 122c87c4 (31.4%).
 
 | Model | Run 1 | Run 2 | Run 3 | Run 4 | Mean |
 |-------|-------|-------|-------|-------|------|
 | Oracle (solve.sh) | 100% | — | — | — | 100% |
-| Claude Opus 4.7 | 88.2% (e468c88a) | — | — | — | 88.2% |
-| Qwen 3.5 397B | 47.1% (7c24f447) | 41.2% (b00d4e26) | 52.9% (1af7ef43) | 47.1% (d4d668ad) | 47.1% |
+| Claude Opus 4.7 | 88.2% (487f1695) | 76.5% (3075fe93) | — | — | 82.4% |
+| Qwen 3.5 397B | 47.1% (d281ec6a) | 35.3% (cd49174d) | 35.3% (87a9d53f) | 31.4% (122c87c4) | 37.3% |
 
-Raw scores: Opus 45/51 pts (e468c88a), Qwen 24/51 pts mean.
+Raw scores: Opus best-run 45/51 pts (487f1695), Qwen 19/51 pts mean.
 
 ### Per-Rubric Catch Rates
 
-Opus: 1 calibration run (e468c88a). Qwen: averaged across 4 representative runs;
-rub_002 and rub_006 show within-distribution variance (some Qwen runs detect list/CSV
-leaks via owner_id equality; most do not).
+Opus: representative run 487f1695 (88.2%). Qwen: averaged across 4 representative runs;
+rub_002 and rub_003 show within-distribution variance (run d281ec6a detected list/search
+leaks via sentinel body check; the other three did not).
 
 | Criterion | Opus 4.7 | Qwen 3.5 |
 |-----------|----------|----------|
 | rub_001 (GET /quotes/{id} — internal_notes + vendor sentinel) | 100% | 0% |
-| rub_002 (GET /quotes list — sentinel absent from stranger response) | 100% | 75% |
-| rub_003 (GET /quotes/search — sentinel absent from stranger response) | 100% | 100% |
+| rub_002 (GET /quotes list — sentinel absent from stranger response) | 100% | 25% |
+| rub_003 (GET /quotes/search — sentinel absent from stranger response) | 100% | 25% |
 | rub_004 (GET /{id}/line-items — vendor_code sentinel) | 100% | 0% |
 | rub_005 (GET /{id}/export json — sentinel absent) | 100% | 0% |
-| rub_006 (GET /{id}/export csv — sentinel absent from body) | 100% | 25% |
+| rub_006 (GET /{id}/export csv — sentinel absent from body) | 100% | 0% |
 | rub_007 (GET /{id}/attachments — attachment sentinel) | 100% | 0% |
-| rub_008 (path traversal via ../<id>/ in attachment name) | 100% | 100% |
+| rub_008 (path traversal via ../<id>/ in attachment name) | 100% | 75% |
 | rub_009 (fork→PATCH laundering: inherited private fields) | 0% | 0% |
 | rub_010 (fork→send laundering: inherited private fields) | 0% | 0% |
 | rub_011 (owner still reads full quote with internal_notes — guard) | 100% | 100% |
@@ -70,12 +83,13 @@ leaks via owner_id equality; most do not).
 **DISCRIMINATIVE**
 
 - Oracle: 100% ✓
-- Opus 4.7: 88.2% (1 run) ✓ (target ≥80%)
-- Qwen 3.5 397B: 47.1% mean across 4 runs ✓ (target 25–50%; run 1af7ef43 at 52.9% is
-  marginally above ceiling but within natural variance — mean is squarely on target)
+- Opus 4.7: 82.4% mean across 2 runs (best: 88.2%) ✓ (target ≥80%)
+- Qwen 3.5 397B: 37.3% mean across 4 runs ✓ (target 25–50%)
 
-The gap is driven by rub_001, rub_004, rub_005, rub_007 (sentinel checks on the most
-targeted surfaces) plus rub_014 (sentinel sweep quality) and rub_017 (body-inspection
-requirement) — Qwen uses status-code-only assertions on these and fails all six.
-Opus consistently misses rub_009–010 (laundering flows, weight 3 each = 6 pts); these
-two items account for Opus's 6/51 lost points.
+The gap is driven by rub_001–007 (sentinel checks across all 7 read surfaces),
+rub_014 (sentinel sweep quality), and rub_017 (body-inspection requirement) — Qwen
+uses status-code-only or empty-list assertions and fails all nine. rub_008 (traversal)
+is partially caught by Qwen (75%) since the traversal pattern is more conspicuous.
+Opus consistently misses rub_009–010 (laundering flows, weight 3 each = 6 pts); the
+weaker Opus run (3075fe93) additionally missed rub_005 and rub_014 when its agent used
+a status-block helper without unconditional body inspection for the JSON export endpoint.
