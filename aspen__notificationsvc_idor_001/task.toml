@@ -15,7 +15,7 @@ pipeline = "testgen"
 task_type = "test_authoring"
 rubric_only = true
 image_digest = "sha256:FILL_AFTER_UPLOAD"
-base_commit = "8878167a5fd8c93918725d62df39b37973c43123"
+base_commit = "c7fbce0ce823b3a257d57e9aca770104f5d3aea3"
 
 [verifier]
 timeout_sec = 1800.0
