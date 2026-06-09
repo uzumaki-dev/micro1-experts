@@ -2,7 +2,7 @@ schema_version = "1.2"
 artifacts = []
 
 [task]
-name = "testgen/aspen__notificationsvc_idor_001"
+name = "aspen/aspen__notificationsvc_idor_001"
 description = "Author tests for notification IDOR — a notification service leaks private message bodies and delivery routing codes to any authenticated user due to missing ownership checks"
 authors = [{ name = "Zeeshan Amir", email = "zeam710@expert.micro1.ai" }]
 keywords = ["idor", "access-control", "notifications", "test-authoring"]
