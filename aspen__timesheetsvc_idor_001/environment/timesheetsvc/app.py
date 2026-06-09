@@ -29,7 +29,6 @@ def create_timesheet(body: TimesheetCreate, x_user_id: str = Header(...)) -> Tim
 
 @app.get("/timesheets")
 def list_timesheets(x_user_id: str = Header(...)) -> list[Timesheet]:
-    # BUG: returns all timesheets regardless of ownership
     return store.list_all()
 
 
@@ -37,7 +36,6 @@ def list_timesheets(x_user_id: str = Header(...)) -> list[Timesheet]:
 def search_timesheets(
     q: str = Query(""), x_user_id: str = Header(...)
 ) -> list[Timesheet]:
-    # BUG: searches across all timesheets regardless of ownership
     q_lower = q.lower()
     return [
         ts
@@ -51,7 +49,6 @@ def get_timesheet(timesheet_id: str, x_user_id: str = Header(...)) -> Timesheet:
     ts = store.get(timesheet_id)
     if ts is None:
         raise HTTPException(status_code=404, detail="Not found")
-    # BUG: no ownership check — any authenticated user can read any timesheet
     return ts
 
 
@@ -60,7 +57,6 @@ def get_entries(timesheet_id: str, x_user_id: str = Header(...)):
     ts = store.get(timesheet_id)
     if ts is None:
         raise HTTPException(status_code=404, detail="Not found")
-    # BUG: no ownership check
     return ts.entries
 
 
@@ -73,7 +69,6 @@ def export_timesheet(
     ts = store.get(timesheet_id)
     if ts is None:
         raise HTTPException(status_code=404, detail="Not found")
-    # BUG: no ownership check
     if format == "csv":
         output = io.StringIO()
         writer = csv.writer(output)
@@ -99,10 +94,8 @@ def get_receipt(
     ts = store.get(timesheet_id)
     if ts is None:
         raise HTTPException(status_code=404, detail="Not found")
-    # BUG: no ownership check
     content = ts.receipts.get(name)
     if content is None:
-        # BUG: naive path traversal — resolves ../<other_id>/<file> across all timesheets
         parts = name.replace("\\", "/").split("/")
         if len(parts) >= 2:
             other_file = parts[-1]
@@ -133,15 +126,14 @@ def clone_timesheet(timesheet_id: str, x_user_id: str = Header(...)) -> Timeshee
     ts = store.get(timesheet_id)
     if ts is None:
         raise HTTPException(status_code=404, detail="Not found")
-    # BUG: inherits internal_notes, private_rate, and receipts from victim without scrubbing
     return store.create(
         owner_id=x_user_id,
         project=ts.project,
         status="draft",
         entries=ts.entries,
-        internal_notes=ts.internal_notes,  # BUG: copies private notes
-        private_rate=ts.private_rate,       # BUG: copies private billing rate
-        receipts=ts.receipts,               # BUG: copies private receipts
+        internal_notes=ts.internal_notes,
+        private_rate=ts.private_rate,
+        receipts=ts.receipts,
         collaborators=[],
         visibility="private",
     )

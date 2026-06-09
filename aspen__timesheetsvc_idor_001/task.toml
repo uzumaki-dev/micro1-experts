@@ -2,7 +2,7 @@ schema_version = "1.2"
 artifacts = []
 
 [task]
-name = "micro1/aspen__timesheetsvc_idor_001"
+name = "aspen/aspen__timesheetsvc_idor_001"
 description = "Author tests for timesheet IDOR — a timesheet management service leaks private billing data to any authenticated user due to missing ownership checks"
 authors = [{ name = "Zeeshan Amir", email = "zeam710@expert.micro1.ai" }]
 keywords = ["idor", "access-control", "timesheet", "test-authoring"]
@@ -15,7 +15,7 @@ pipeline = "aspen"
 task_type = "test_authoring"
 rubric_only = true
 image_digest = "sha256:FILL_AFTER_UPLOAD"
-base_commit = "4564d73b645c75185d190d6d516976e1f5771c25"
+base_commit = "3c1e3f7b48552866227952e3e432d1060c0f4cf6"
 
 [verifier]
 timeout_sec = 1800.0

@@ -12,7 +12,7 @@ owner, admin, collaborator, and public-visibility flows are not over-blocked.
 ## Substrate
 
 * **Source**: Hand-authored FastAPI service (~170 LOC)
-* **Commit**: 4564d73b645c75185d190d6d516976e1f5771c25
+* **Commit**: 3c1e3f7b48552866227952e3e432d1060c0f4cf6
 * **Description**: In-memory multi-tenant timesheet API. Identity via `X-User-Id` header.
   Timesheets carry `internal_notes`, `private_rate`, per-entry `rate_code`, and `receipts`
   (file map). Endpoints: POST/GET/PATCH/search/export/entries/receipts/clone/submit.
