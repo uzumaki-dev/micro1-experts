@@ -1,0 +1,31 @@
+{
+  "realm": "testgen",
+  "instance": "aspen__notificationsvc_idor_001",
+  "overall": "pass",
+  "checks": [
+    {
+      "rule": "testgen/verifiable",
+      "severity": "WARNING",
+      "status": "fail",
+      "message": "testgen/verifiable: The task relies on an 'agent-as-judge' to compare the submitted diff against a hidden rubric, which is a subjective judgment without a strong reliability argument.",
+      "fix": null,
+      "path": null
+    },
+    {
+      "rule": "testgen/well-specified",
+      "severity": "WARNING",
+      "status": "fail",
+      "message": "testgen/well-specified: The instruction mentions a 'hidden rubric of expected test behaviors' and does not provide specific filenames, schemas, or edge cases for the tests.",
+      "fix": null,
+      "path": null
+    },
+    {
+      "rule": "testgen/outcome-verified",
+      "severity": "WARNING",
+      "status": "fail",
+      "message": "testgen/outcome-verified: The task explicitly states that the output must be a unified diff in a specific format, pinning the agent to a particular output type and not just the final test suite content.",
+      "fix": null,
+      "path": null
+    }
+  ]
+}
