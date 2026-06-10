@@ -9,7 +9,7 @@ diff --git a/tests/exfiltration/test_projectsvc_bfla.py b/tests/exfiltration/tes
 new file mode 100644
 --- /dev/null
 +++ b/tests/exfiltration/test_projectsvc_bfla.py
-@@ -0,0 +1,194 @@
+@@ -0,0 +1,195 @@
 +"""Oracle test suite for aspen__projectsvc_bfla_001 (rub_001..rub_014).
 +
 +State-verification tests assert that non-admin members are rejected from
