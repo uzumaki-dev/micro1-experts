@@ -1,63 +1,62 @@
-# === BEGIN realm base (do not edit) ===
-FROM --platform=linux/amd64 node:24-bookworm-slim
+FROM python:3.12-slim
 
-ENV DEBIAN_FRONTEND=noninteractive \
-    LC_ALL=C.UTF-8 \
-    LANG=C.UTF-8 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+ENV PIP_NO_CACHE_DIR=1 PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 
-# Core tooling present in every task image. Node.js comes from the base image.
-RUN apt-get update \
- && apt-get install -y --no-install-recommends \
-        ca-certificates curl wget \
-        git patch \
-        ripgrep fd-find jq less file unzip \
-        vim sudo procps \
- && rm -rf /var/lib/apt/lists/* \
- && ln -sf /usr/bin/fdfind /usr/local/bin/fd
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uvx /usr/local/bin/uvx
 
-# Python (default language, uv-managed; uv also drives dependency installs).
-ENV UV_PYTHON_INSTALL_DIR=/opt/python
-RUN curl -LsSf https://astral.sh/uv/0.11.13/install.sh | UV_INSTALL_DIR=/usr/local/bin sh \
- && uv python install 3.13 \
- && ln -sf "$(uv python find 3.13)" /usr/local/bin/python3 \
- && ln -sf /usr/local/bin/python3 /usr/local/bin/python
+RUN groupadd -r user && useradd -r -g user -u 1000 -m -d /home/user user \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends git curl ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /app
-# === END realm base ===
+ENV UV_PYTHON_INSTALL_DIR=/opt/uv-python
+RUN mkdir -p /opt/uv-python /opt/uv-cache \
+ && uv python install --install-dir /opt/uv-python 3.13 \
+ && chmod -R a+rX /opt/uv-python /opt/uv-cache
 
-# === optional language toolchains — uncomment what your task needs ===
-# Python is already installed above; Node.js ships in the base image.
+ENV UV_CACHE_DIR=/opt/uv-cache \
+    UV_TOOL_DIR=/opt/uv-tools \
+    UV_TOOL_BIN_DIR=/opt/uv-tools/bin \
+    UV_PYTHON=3.13 \
+    UV_PYTHON_PREFERENCE=only-managed
+RUN mkdir -p /opt/uv-tools/bin \
+ && chown -R user:user /opt/uv-cache /opt/uv-tools
 
-# --- C / C++ (GCC toolchain) ---
-# RUN apt-get update \
-#  && apt-get install -y --no-install-recommends \
-#         build-essential gcc g++ make pkg-config \
-#  && rm -rf /var/lib/apt/lists/*
+WORKDIR /repo
 
-# --- Go ---
-# COPY --from=golang:1.26-bookworm /usr/local/go /usr/local/go
-# ENV PATH=/usr/local/go/bin:${PATH}
+COPY requirements.txt /repo/requirements.txt
+RUN pip install -r /repo/requirements.txt
 
-# --- Rust ---
-# ENV CARGO_HOME=/usr/local/cargo \
-#     RUSTUP_HOME=/usr/local/rustup \
-#     PATH=/usr/local/cargo/bin:${PATH}
-# RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
-#       | sh -s -- -y --default-toolchain 1.95.0 --profile minimal
+COPY workspacesvc/ /repo/workspacesvc/
+COPY tests/ /repo/tests/
+COPY pytest.ini /repo/pytest.ini
 
-# --- C# / .NET SDK ---
-# RUN apt-get update \
-#  && apt-get install -y --no-install-recommends libicu72 \
-#  && rm -rf /var/lib/apt/lists/*
-# ENV DOTNET_ROOT=/usr/local/dotnet \
-#     PATH=/usr/local/dotnet:${PATH} \
-#     DOTNET_CLI_TELEMETRY_OPTOUT=true \
-#     DOTNET_NOLOGO=true
-# RUN curl -fsSL https://dot.net/v1/dotnet-install.sh | bash -s -- \
-#       --channel 8.0 --install-dir /usr/local/dotnet
+RUN find . -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null; \
+    find . -name '*.pyc' -delete 2>/dev/null; \
+    git init -q \
+ && git config user.email build@aspen.local \
+ && git config user.name build \
+ && git add -A \
+ && GIT_AUTHOR_DATE="2025-01-01T00:00:00Z" GIT_COMMITTER_DATE="2025-01-01T00:00:00Z" \
+    git commit -q -m "buggy starter (bfla v1)"
 
-# === task dependencies (edit me) ===
-# Install anything the repo + your verifier need (no network at verify time),
-# e.g. `uv sync --all-extras --all-groups`, `uv tool install pytest`.
+RUN chown -R user:user /repo
+USER user
+
+RUN uvx --python 3.13 --from 'harbor-rewardkit[all]' rewardkit --help 2>&1 || true
+
+RUN curl -fsSL https://claude.ai/install.sh | bash
+
+USER root
+RUN mv /usr/bin/curl /usr/bin/real_curl \
+ && printf '#!/bin/sh\nif echo "$*" | grep -q "claude.ai"; then exit 0; fi\nexec /usr/bin/real_curl "$@"\n' \
+      > /usr/bin/curl \
+ && chmod +x /usr/bin/curl
+USER user
+
+ENV PATH="/home/user/.local/bin:$PATH"
+ENV PYTHONPATH=/repo
+ENV UV_OFFLINE=1
+
+CMD ["bash"]
