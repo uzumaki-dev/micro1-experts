@@ -33,7 +33,6 @@ def create_candidate(body: CandidateCreate, x_user_id: str = Header(...)) -> Can
 
 @app.get("/candidates")
 def list_candidates(x_user_id: str = Header(...)) -> list[Candidate]:
-    # BUG: returns all candidates regardless of ownership
     return store.list_all()
 
 
@@ -41,7 +40,6 @@ def list_candidates(x_user_id: str = Header(...)) -> list[Candidate]:
 def search_candidates(
     q: str = Query(""), x_user_id: str = Header(...)
 ) -> list[Candidate]:
-    # BUG: searches across all candidates regardless of ownership
     q_lower = q.lower()
     return [
         c
@@ -55,7 +53,6 @@ def get_candidate(candidate_id: str, x_user_id: str = Header(...)) -> Candidate:
     c = store.get(candidate_id)
     if c is None:
         raise HTTPException(status_code=404, detail="Not found")
-    # BUG: no ownership check — any authenticated user can read any candidate
     return c
 
 
@@ -64,7 +61,6 @@ def get_assessments(candidate_id: str, x_user_id: str = Header(...)):
     c = store.get(candidate_id)
     if c is None:
         raise HTTPException(status_code=404, detail="Not found")
-    # BUG: no ownership check
     return c.assessments
 
 
@@ -77,7 +73,6 @@ def export_candidate(
     c = store.get(candidate_id)
     if c is None:
         raise HTTPException(status_code=404, detail="Not found")
-    # BUG: no ownership check
     if format == "csv":
         output = io.StringIO()
         writer = csv.writer(output)
@@ -106,7 +101,6 @@ def get_document(
     c = store.get(candidate_id)
     if c is None:
         raise HTTPException(status_code=404, detail="Not found")
-    # BUG: no ownership check
     content = c.documents.get(name)
     if content is None:
         raise HTTPException(status_code=404, detail="Document not found")
@@ -132,15 +126,14 @@ def clone_candidate(candidate_id: str, x_user_id: str = Header(...)) -> Candidat
     c = store.get(candidate_id)
     if c is None:
         raise HTTPException(status_code=404, detail="Not found")
-    # BUG: inherits screening_notes, assessments, and documents from victim
     return store.create(
         owner_id=x_user_id,
         name=c.name,
         position=c.position,
         status="pending",
-        screening_notes=c.screening_notes,  # BUG: copies private notes
-        assessments=c.assessments,          # BUG: copies private assessments
-        documents=c.documents,              # BUG: copies private documents
+        screening_notes=c.screening_notes,
+        assessments=c.assessments,
+        documents=c.documents,
         interviewer_ids=[],
         visibility="private",
     )
