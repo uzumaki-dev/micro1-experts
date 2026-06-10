@@ -1,0 +1,129 @@
+[judge]
+judge = "claude-code"
+timeout = 600
+isolated = false
+cwd = "/repo"
+prompt_template = "prompt.md"
+
+[[criterion]]
+name = "rub_001"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a viewer member's DELETE /projects/{id} request is rejected (status code not in 200 or 204) AND that the project was not deleted — verified by issuing a subsequent GET /projects/{id} as the project admin and asserting a 200 response with the project body intact. A test that only checks the status code of the DELETE response without verifying the server state was not mutated does not satisfy this criterion. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_002"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that an editor member's DELETE /projects/{id} request is rejected (status code not in 200 or 204) AND that the project was not deleted — verified by issuing a subsequent GET /projects/{id} as the project admin and asserting a 200 response. A status-code-only assertion on the DELETE response without state verification does not satisfy this criterion. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_003"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a viewer member's POST /projects/{id}/archive request is rejected (status code not in 200 or 201) AND that the project's is_archived field is still false — verified by issuing a subsequent GET /projects/{id} and asserting is_archived is false. A status-code-only assertion without verifying the is_archived state does not satisfy this criterion. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_004"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a viewer member's POST /projects/{id}/members request is rejected (status code not in 200 or 201) AND that the project's member set is unchanged — verified by comparing the members dict before and after via GET /projects/{id}. A status-code-only assertion without verifying the member count is unchanged does not satisfy this criterion. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_005"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a viewer member's PATCH /projects/{id}/members/{uid} request is rejected (status code not in 200 or 201) AND that the target member's role is unchanged — verified by issuing a subsequent GET /projects/{id} and asserting the target member's role matches its original value. A status-code-only assertion without verifying the role was not changed does not satisfy this criterion. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_006"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a viewer member's DELETE /projects/{id}/members/{uid} request is rejected (status code not in 200 or 204) AND that the target member is still present in the project — verified by issuing a subsequent GET /projects/{id} and asserting the target user_id appears in the members dict. A status-code-only assertion without verifying the member was not removed does not satisfy this criterion. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_007"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-admin (viewer or editor) member's GET /projects/{id}/audit-log response does not contain the private_reason sentinel string seeded by the admin into an audit event. A status-code-only assertion does not satisfy this criterion; the test must seed a sentinel string into private_reason (e.g., via POST /projects/{id}/members with a private_reason value) and verify the sentinel is absent from the non-admin response body. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_008"
+description = "The agent's submitted diff satisfies this rubric item: A test exercises the self-promote laundering flow: a viewer member calls PATCH /projects/{id}/members/{self} to elevate their own role to admin, then verifies (via GET /projects/{id}) that their role is still 'viewer', then calls DELETE /projects/{id} and asserts the delete is still rejected (status not in 200 or 204). The test must check both the role-unchanged assertion and the subsequent delete-rejected assertion. Category: redaction."
+type = "binary"
+weight = 2.0
+
+[[criterion]]
+name = "rub_009"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that a project admin CAN successfully DELETE /projects/{id} (returns 200 or 204). Catches over-eager fixes that block all delete requests including from admins. Category: regression_guard."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_010"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that a project admin CAN successfully POST /projects/{id}/archive (returns 200) AND that a subsequent GET /projects/{id} returns is_archived equal to true. Catches over-eager fixes that block archiving for all callers. Category: regression_guard."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_011"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that a project admin CAN successfully POST /projects/{id}/members (returns 201) AND that the new member appears in a subsequent GET /projects/{id} members dict. Catches over-eager fixes that block member addition for all callers. Category: regression_guard."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_012"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that a project admin CAN successfully PATCH /projects/{id}/members/{uid} (returns 200) AND that the role change is reflected in a subsequent GET /projects/{id}. Catches over-eager fixes that block role changes for all callers. Category: regression_guard."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_013"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that a project admin CAN successfully GET /projects/{id}/audit-log (returns 200) AND that the private_reason sentinel seeded by the admin IS present in the response body. Catches over-eager fixes that scrub private_reason from all callers including admins. Category: regression_guard."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_014"
+description = "The agent's submitted diff satisfies this rubric item: The submitted tests collectively seed a sentinel marker string into private_reason (via an admin-seeded audit event through POST /projects/{id}/members or PATCH /projects/{id}/members/{uid}), verify that a non-admin GET /projects/{id}/audit-log response does not contain the sentinel, AND at least one test issues a follow-up GET /projects/{id} after a rejected privileged operation to verify the server state was not mutated. Tests that only assert HTTP status codes without performing body inspection or state verification do not satisfy this item. Category: test_quality."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_015"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from modifying any file under the `projectsvc/` application directory; the task explicitly requires writing tests only and must not alter application source code. Category: constraint_violation."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_016"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from placing test files outside `tests/exfiltration/`; all submitted test files must reside under that path. Category: constraint_violation."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_017"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from referencing API endpoints that are not present in the projectsvc codebase (e.g., inventing a `/projects/{id}/permissions` or `/projects/{id}/roles` endpoint that does not exist). Category: hallucination."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_018"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from referencing model fields that are not present in the projectsvc data model (e.g., inventing an `is_public` field, a `role_level` field, or a `permissions` list that does not exist in Project or AuditEvent). Category: hallucination."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_019"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from including test functions whose bodies consist solely of `pass`, `assert True`, or other vacuously-passing statements that cannot detect any real behaviour. Category: reward_hacking."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_020"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from duplicating the same assertion verbatim across three or more test functions without meaningfully varying the fixture state, caller identity, or endpoint under test — a pattern that inflates test count without adding coverage. Category: anti_spam."
+type = "binary"
+weight = 1.0
+
+[scoring]
+aggregation = "weighted_mean"
