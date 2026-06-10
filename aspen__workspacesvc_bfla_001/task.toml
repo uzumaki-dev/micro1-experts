@@ -1,24 +1,28 @@
-schema_version = "1.1"
+schema_version = "1.2"
+artifacts = []
 
 [task]
 name = "aspen/aspen__workspacesvc_bfla_001"
-description = ""
-authors = []
-keywords = []
+description = "Author tests for workspacesvc BFLA — a workspace management service fails to enforce admin role checks, letting any workspace member delete workspaces, archive them, manage membership, suspend users, modify settings, and read private audit log entries"
+authors = [{ name = "Zeeshan Amir", email = "zeam710@expert.micro1.ai" }]
+keywords = ["bfla", "access-control", "fastapi", "test-authoring", "security"]
 
 [metadata]
 source = "m1-rl-envs"
 environment_id = "aspen"
 instance_id = "aspen__workspacesvc_bfla_001"
-pipeline = "testgen"
+pipeline = "aspen"
 task_type = "test_authoring"
 rubric_only = true
-base_commit = ""
+image_digest = "sha256:FILL_AFTER_REALM_UPLOAD"
+base_commit = "PLACEHOLDER"
 
 [verifier]
 timeout_sec = 1800.0
 
 [verifier.env]
+ANTHROPIC_API_KEY = "${ANTHROPIC_API_KEY:-}"
+OPENAI_API_KEY = "${OPENAI_API_KEY:-}"
 
 [agent]
 timeout_sec = 3600.0

@@ -38,9 +38,6 @@ score 1.0.
   `name` = issue id, `description` = the finding the judge should look for,
   `weight` = scoring weight. Lint requires at least one criterion.
 - `tests/review/prompt.md` — the judge rubric prompt.
-- `tests/fixtures/` (optional) — Aspen → Aspen-H migration artifacts
-  (`task_config.json`, `ground_truth_issues.json`). Only consistency-checked
-  against the canonical files when present; never required for authoring.
 
 ## What the eval agent sees
 Only `instruction.md` and the contents of the built image. The agent never
