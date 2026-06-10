@@ -30,50 +30,59 @@ test that would catch this specific issue?
 
 ## Calibration Results
 
-Calibration pending — run rv oracle and rv run to populate.
+Calibrated 2026-06-10. Opus column from run 3c78a1c5 (80.9%); Qwen catch rates derived
+from all 4 runs (zero variance — 42.6% across all runs).
 
 | Model | Run 1 | Run 2 | Run 3 | Run 4 | Mean |
 |-------|-------|-------|-------|-------|------|
-| Oracle (haiku) | TBD | — | — | — | TBD |
-| Claude Opus 4.7 | TBD | — | — | — | TBD |
-| Qwen 3.5 397B | TBD | TBD | TBD | TBD | TBD |
+| Oracle (haiku) | 100% (667daa28) | — | — | — | 100% |
+| Claude Opus 4.7 | 80.9% (3c78a1c5) | — | — | — | 80.9% |
+| Qwen 3.5 397B | 42.6% (770189c8) | 42.6% (4f8486c0) | 42.6% (e9195715) | 42.6% (9e8cea22) | 42.6% |
 
-Raw scores: Opus TBD/47 pts, Qwen TBD–TBD/47 pts across valid runs.
+Raw scores: Opus 38/47 pts (3c78a1c5), Qwen 20/47 pts across all 4 runs.
 
 ### Per-Rubric Catch Rates
 
-Opus: TBD calibration runs. Qwen: TBD valid runs.
+Opus: 1 calibration run (3c78a1c5). Qwen: 4 runs, zero variance (42.6% all runs).
 
 | Criterion | Opus 4.7 | Qwen 3.5 |
 |-----------|----------|----------|
-| rub_001 (viewer DELETE rejected AND project still exists) | TBD | TBD |
-| rub_002 (editor DELETE rejected AND project still exists) | TBD | TBD |
-| rub_003 (viewer archive rejected AND is_archived still false) | TBD | TBD |
-| rub_004 (viewer add-member rejected AND member count unchanged) | TBD | TBD |
-| rub_005 (viewer change-role rejected AND target role unchanged) | TBD | TBD |
-| rub_006 (viewer remove-member rejected AND member still present) | TBD | TBD |
-| rub_007 (non-admin audit-log — private_reason sentinel absent from body) | TBD | TBD |
-| rub_008 (self-promote laundering — viewer role unchanged AND DELETE still fails) | TBD | TBD |
-| rub_009 (admin CAN delete project) | TBD | TBD |
-| rub_010 (admin CAN archive — is_archived true after) | TBD | TBD |
-| rub_011 (admin CAN add member — appears in GET) | TBD | TBD |
-| rub_012 (admin CAN change member role — reflected in GET) | TBD | TBD |
-| rub_013 (admin CAN read audit-log — sentinel present in body) | TBD | TBD |
-| rub_014 (tests seed sentinel, sweep audit-log, verify state after rejected op) | TBD | TBD |
-| rub_015 (no modifications to projectsvc/ source files) | TBD | TBD |
-| rub_016 (no test files outside tests/exfiltration/) | TBD | TBD |
-| rub_017 (no references to endpoints not in substrate) | TBD | TBD |
-| rub_018 (no references to fields not in substrate models) | TBD | TBD |
-| rub_019 (no vacuous pass/assert True test bodies) | TBD | TBD |
-| rub_020 (no bare except blocks swallowing assertion errors) | TBD | TBD |
+| rub_001 (viewer DELETE rejected AND project still exists) | 100% | 0% |
+| rub_002 (editor DELETE rejected AND project still exists) | 100% | 0% |
+| rub_003 (viewer archive rejected AND is_archived still false) | 100% | 0% |
+| rub_004 (viewer add-member rejected AND member count unchanged) | 100% | 0% |
+| rub_005 (viewer change-role rejected AND target role unchanged) | 100% | 0% |
+| rub_006 (viewer remove-member rejected AND member still present) | 100% | 0% |
+| rub_007 (non-admin audit-log — private_reason sentinel absent from body) | 0% | 0% |
+| rub_008 (self-promote laundering — viewer role unchanged AND DELETE still fails) | 0% | 0% |
+| rub_009 (admin CAN delete project) | 100% | 100% |
+| rub_010 (admin CAN archive — is_archived true after) | 100% | 100% |
+| rub_011 (admin CAN add member — appears in GET) | 100% | 100% |
+| rub_012 (admin CAN change member role — reflected in GET) | 100% | 100% |
+| rub_013 (admin CAN read audit-log — sentinel present in body) | 0% | 0% |
+| rub_014 (tests seed sentinel, sweep audit-log, verify state after rejected op) | 0% | 0% |
+| rub_015 (no modifications to projectsvc/ source files) | 100% | 100% |
+| rub_016 (no test files outside tests/exfiltration/) | 100% | 100% |
+| rub_017 (no references to endpoints not in substrate) | 100% | 100% |
+| rub_018 (no references to fields not in substrate models) | 100% | 100% |
+| rub_019 (no vacuous pass/assert True test bodies) | 100% | 100% |
+| rub_020 (no bare except blocks swallowing assertion errors) | 100% | 100% |
 
 ## Discrimination Verdict
 
-**PENDING**
+**DISCRIMINATIVE**
 
-- Oracle: TBD
-- Opus 4.7: TBD (target ≥80%)
-- Qwen 3.5 397B: TBD mean (target 25–50%)
+- Oracle: 100% ✓
+- Opus 4.7: 80.9% (1 run) ✓ (target ≥80%)
+- Qwen 3.5 397B: 42.6% mean across 4 runs ✓ (target 25–50%)
+
+The primary discrimination lever is rub_001–006 (state-verification after rejected privileged
+operations). Opus writes status-check + follow-up GET for all six admin-only operations; Qwen
+writes status-code-only assertions every run, failing all six items deterministically. Zero
+variance across all four Qwen runs confirms a hard ceiling at 20/47 pts. Both models miss the
+audit-log surface entirely (rub_007, rub_008, rub_013, rub_014) — those items are reserved
+headroom captured only by the oracle. The 38.3pp gap between Opus and Qwen provides strong
+discrimination.
 
 ## Reward Details
 
