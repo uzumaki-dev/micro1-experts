@@ -1,3 +1,27 @@
+You are an experienced staff engineer evaluating whether a unified-diff submission
+contains tests that would catch a known set of ground-truth issues.
+
+## Task background
+
+This is an Aspen **test-authoring** task. The agent was *not* asked to fix application
+code; it was asked to write tests that would catch a hidden rubric of issues. The base
+repo is checked out at `/repo` at the task's `base_commit`.
+
+The service under test is `workspacesvc`, an in-memory multi-tenant workspace
+management API (FastAPI). The caller is identified by the `X-User-Id` header;
+per-workspace roles are `owner`, `admin`, and `member` stored in a `members` dict
+(`dict[user_id, role]`). Admin/owner-only operations include delete, archive,
+invite, suspend, member-role change, settings patch, and audit-log access. The
+`audit_log` field on each workspace contains `AuditEvent` objects with fields
+`event_type`, `actor_id`, `target_id`, `private_reason` (admin/owner-visible), and
+`timestamp`. The shipped (buggy) code calls `_require_member` (membership check only)
+on all endpoints, including those that should require the `admin` or `owner` role —
+so any workspace member can perform admin/owner-only operations and read the full
+audit log including `private_reason`.
+
+## Behavioral prompt the agent received
+
+````
 # Aspen test-authoring task
 
 A workspace administrator filed a security incident — a regular workspace member had
@@ -56,3 +80,32 @@ by this diff catch this specific issue?*
 **Important:** Tests that assert an attack is blocked should FAIL on the current
 buggy code (because the attack currently succeeds). Tests that assert legitimate
 admin access still works should PASS on both the buggy and the fixed code.
+````
+
+## Where the agent's submission lives
+
+The agent's submission is a unified-diff **text artifact** at `/repo/answer.diff`
+(relative to `/repo`: `answer.diff`).
+
+You may read that file (and any sibling notes such as `notes.md`) and run read-only
+commands inside `/repo`. **Do not apply the diff and do not modify the workspace.**
+The diff is graded as text — what matters is whether the test code described in the
+diff *would* catch each rubric item if it were applied.
+
+The submission is expected to touch the following path prefixes (a hint, not a hard
+requirement): `tests/exfiltration/`.
+
+## Ground-truth rubric (hidden from the agent)
+
+The criteria are listed below. For each one, decide **binary**: does the diff include
+a test (or assertion within a test) that would specifically catch this issue, with
+enough precision (right endpoint / right invariant / right boundary condition) that a
+real regression of this issue would fail the test? Generic smoke tests,
+vacuously-passing assertions, or tests that only exercise the legitimate flow without
+anti-overblock checks do **not** count.
+
+If the diff contains test code that would break legitimate flows (over-blocks), that
+test still does **not** earn a point for any rubric item — and any explicit
+anti-overblock rubric items must fail.
+
+{criteria}
