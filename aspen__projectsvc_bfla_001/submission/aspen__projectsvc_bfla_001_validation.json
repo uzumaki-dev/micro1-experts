@@ -1,0 +1,31 @@
+{
+  "realm": "testgen",
+  "instance": "aspen__projectsvc_bfla_001",
+  "overall": "pass",
+  "checks": [
+    {
+      "rule": "no_bloat_directories",
+      "severity": "WARNING",
+      "status": "fail",
+      "message": "generated/dependency directories found that bloat the submission: environment/.pytest_cache, environment/.venv. Remove any not needed for the task to build or run before submitting.",
+      "fix": null,
+      "path": "/Users/hamzahmanzoor/Desktop/micro1-experts/aspen__projectsvc_bfla_001"
+    },
+    {
+      "rule": "testgen/well-specified",
+      "severity": "WARNING",
+      "status": "fail",
+      "message": "testgen/well-specified: The instruction lacks specific details about the project management platform's API, data structures, or how to interact with it to write tests.",
+      "fix": null,
+      "path": null
+    },
+    {
+      "rule": "testgen/solvable",
+      "severity": "WARNING",
+      "status": "fail",
+      "message": "testgen/solvable: Without knowledge of the project management platform's internal workings or API, implementing the tests would likely take more than a few hours.",
+      "fix": null,
+      "path": null
+    }
+  ]
+}
