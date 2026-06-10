@@ -1,24 +1,28 @@
-schema_version = "1.1"
+schema_version = "1.2"
+artifacts = []
 
 [task]
 name = "aspen/aspen__loansvc_idor_001"
-description = ""
-authors = []
-keywords = []
+description = "Author tests for loan IDOR — a loan application service leaks private underwriter notes and fee data to any authenticated user due to missing ownership checks"
+authors = [{ name = "Zeeshan Amir", email = "zeam710@expert.micro1.ai" }]
+keywords = ["idor", "access-control", "lending", "test-authoring"]
 
 [metadata]
 source = "m1-rl-envs"
 environment_id = "aspen"
 instance_id = "aspen__loansvc_idor_001"
-pipeline = "testgen"
+pipeline = "aspen"
 task_type = "test_authoring"
 rubric_only = true
-base_commit = ""
+image_digest = "sha256:FILL_AFTER_UPLOAD"
+base_commit = "f4cc91c24eae3ca10269f3d97f921b29634cc04f"
 
 [verifier]
 timeout_sec = 1800.0
 
 [verifier.env]
+ANTHROPIC_API_KEY = "${ANTHROPIC_API_KEY:-}"
+OPENAI_API_KEY = "${OPENAI_API_KEY:-}"
 
 [agent]
 timeout_sec = 3600.0
