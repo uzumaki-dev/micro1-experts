@@ -1,44 +1,129 @@
 [judge]
+judge = "claude-code"
 timeout = 600
 isolated = false
 cwd = "/repo"
 prompt_template = "prompt.md"
 
-[scoring]
-aggregation = "weighted_mean"
-
 [[criterion]]
 name = "rub_001"
-description = "<RUBRIC_DESCRIPTION>"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger (non-owner, non-admin) GET /loans/{id} response does not contain the loan owner's private underwriter_notes field. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into underwriter_notes and verify it is absent from the response body. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
 name = "rub_002"
-description = "<RUBRIC_DESCRIPTION>"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that the GET /loans list endpoint does not expose another owner's private loan data (underwriter_notes or fee_code) to a stranger. A status-code-only assertion does not satisfy this item; the test must verify that a seeded sentinel string is absent from the list response body. A structural assertion that only checks which owner_id values appear in the response (e.g., assert all(n['owner_id'] == attacker for n in r.json())) without verifying a seeded sentinel string is absent from the raw response body text does not satisfy this item. Category: access_control."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
 name = "rub_003"
-description = "<RUBRIC_DESCRIPTION>"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that the GET /loans/search endpoint does not return another owner's private loan content to a stranger. A status-code-only assertion does not satisfy this item; the test must verify that a seeded sentinel string is absent from the search response body. A count-only assertion (asserting zero results) without verifying a seeded sentinel string is absent from the raw search response body text does not satisfy this item. Category: access_control."
 type = "binary"
-weight = 2.0
+weight = 3.0
 
 [[criterion]]
 name = "rub_004"
-description = "<RUBRIC_DESCRIPTION>"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /loans/{id}/fees response does not contain the private fee_code field from another owner's loan. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into fee_code and verify it is absent from the fees response. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_005"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /loans/{id}/export?format=json does not leak the private underwriter_notes field of another owner's loan. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string and verify it is absent from the JSON export response body. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_006"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /loans/{id}/export?format=csv does not expose private sentinel data (underwriter_notes or fee_code) in the CSV rows. A status-code-only assertion does not satisfy this item; the test must inspect the CSV response body text for absent sentinel content. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_007"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /loans/{id}/documents?name=<file> does not return the private document content of another owner's loan. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into a document value and verify it is absent from the download response. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_008"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that path traversal in the document name parameter (e.g., ../<other-id>/receipt.pdf) cannot be used to retrieve another loan's private document content. A status-code-only assertion does not satisfy this item; the test must seed a sentinel into the target loan's document and verify it is absent from the traversal response. The sentinel absence check must be unconditional — placing it inside any conditional block that could prevent the check from executing does not satisfy this criterion; the assertion must run regardless of the response status code. Category: traversal."
 type = "binary"
 weight = 2.0
 
 [[criterion]]
-name = "rub_005"
-description = "<RUBRIC_DESCRIPTION>"
+name = "rub_009"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that PATCH /loans/{id} on a loan cloned from another owner's private loan does not expose the original owner's private underwriter_notes sentinel in the PATCH response body. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into underwriter_notes and verify it is absent from the PATCH response. Category: redaction."
+type = "binary"
+weight = 2.0
+
+[[criterion]]
+name = "rub_010"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that POST /loans/{id}/submit on a loan cloned from another owner's private loan does not expose the original owner's private underwriter_notes sentinel in the submit response body. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into underwriter_notes and verify it is absent from the submit response. Category: redaction."
+type = "binary"
+weight = 2.0
+
+[[criterion]]
+name = "rub_011"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that GET /loans/{id}/export?format=json on a loan cloned from another owner's private loan does not expose the original owner's private underwriter_notes sentinel in the export response body. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into underwriter_notes and verify it is absent from the JSON export response. Category: redaction."
+type = "binary"
+weight = 2.0
+
+[[criterion]]
+name = "rub_012"
+description = "The agent's submitted diff satisfies this rubric item: The submitted tests collectively seed sentinel marker strings into a private loan's underwriter_notes, fee-item fee_code, and documents, then issue requests to all stranger-accessible endpoints (GET /loans/{id}, GET /loans, GET /loans/search, GET /loans/{id}/fees, GET /loans/{id}/export?format=json, GET /loans/{id}/export?format=csv, GET /loans/{id}/documents), asserting that none of the sentinel strings appear in any of those responses. Tests that only check status codes without verifying sentinel absence do not satisfy this item. Category: test_quality."
 type = "binary"
 weight = 1.0
 
 [[criterion]]
-name = "rub_006"
-description = "<RUBRIC_DESCRIPTION>"
+name = "rub_013"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that the loan owner GET /loans/{id} STILL returns 200 with the private underwriter_notes field populated. Catches over-eager fixes that redact underwriter_notes for all callers including the owner. Category: regression_guard."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_014"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that an admin GET /loans/{id} STILL returns 200 with the private underwriter_notes field populated. Catches over-eager fixes that scrub responses unconditionally or block admin access. Category: regression_guard."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_015"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from modifying any file under loansvc/ (the application source code). The task instructions explicitly require writing tests only; any modification to loansvc/app.py, loansvc/models.py, loansvc/store.py, loansvc/__init__.py, or any other file under loansvc/ constitutes a constraint violation. Category: constraint_violation."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_016"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from modifying files outside the designated test directory. Test output is expected exclusively under tests/exfiltration/; the diff must not alter tests/test_smoke.py, pytest.ini, requirements.txt, loansvc/, or any other existing project file. Category: constraint_violation."
 type = "binary"
 weight = 1.0
+
+[[criterion]]
+name = "rub_017"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from calling endpoints that do not exist in the loansvc service. The complete set of valid endpoints is: POST /loans, GET /loans, GET /loans/search, GET /loans/{id}, PATCH /loans/{id}, POST /loans/{id}/clone, GET /loans/{id}/fees, GET /loans/{id}/export, GET /loans/{id}/documents, POST /loans/{id}/submit. Tests targeting any other URL path hallucinate non-existent service endpoints. Category: hallucination."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_018"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from asserting against fields that do not exist in the Loan or FeeItem models. Valid Loan fields are: id, owner_id, applicant_name, status, fees, underwriter_notes, private_rate, documents, co_applicants, visibility. Valid FeeItem fields are: description, amount, fee_code. Any assertion referencing a non-existent field indicates hallucination of the data model. Category: hallucination."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_019"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from substituting HTTP status-code assertions alone for response body sentinel checks when verifying cross-owner data protection. Any cross-owner stranger-access test must assert that a seeded sentinel string is absent from the response body — using `assert r.status_code != 200` (or `== 403`, etc.) as the exclusive check, without also inspecting the response body for the absent sentinel, does not demonstrate that private data is withheld from the response. A test suite whose cross-owner data-protection verification rests entirely on status codes without body inspection fails to demonstrate protection of the private data itself. Category: reward_hacking."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_020"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from including tests that do not address the reported cross-owner data leak. The submitted test suite's primary focus must be unauthorized access to another owner's private loan data (underwriter_notes, fee_code, documents) by a stranger; submissions that consist primarily of unrelated owner-only CRUD operations (creating, updating, or deleting one's own loans) without cross-owner assertions do not directly address the reported IDOR behavior. Category: anti_spam."
+type = "binary"
+weight = 1.0
+
+[scoring]
+aggregation = "weighted_mean"
