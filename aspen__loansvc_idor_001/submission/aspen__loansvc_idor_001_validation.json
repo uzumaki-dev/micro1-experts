@@ -1,0 +1,15 @@
+{
+  "realm": "testgen",
+  "instance": "aspen__loansvc_idor_001",
+  "overall": "pass",
+  "checks": [
+    {
+      "rule": "testgen/well-specified",
+      "severity": "WARNING",
+      "status": "fail",
+      "message": "testgen/well-specified: The instruction lacks specific details about the 'underwriting remarks and fee details' schema or the exact API endpoints to test, which are crucial for writing equivalent verification algorithms.",
+      "fix": null,
+      "path": null
+    }
+  ]
+}
