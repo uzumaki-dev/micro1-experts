@@ -51,7 +51,7 @@ def patch_workspace(
     if body.name is not None:
         updates["name"] = body.name
     if body.settings is not None:
-        updates["settings"] = w.settings.model_copy(update=body.settings)
+        updates["settings"] = w.settings.model_copy(update=body.settings.model_dump(exclude_none=True))
     new_audit = list(w.audit_log) + [
         AuditEvent(event_type="workspace_updated", actor_id=x_user_id,
                    private_reason=f"updated by {x_user_id}")

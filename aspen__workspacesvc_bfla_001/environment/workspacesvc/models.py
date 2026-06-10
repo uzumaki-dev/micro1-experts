@@ -18,7 +18,7 @@ class AuditEvent(BaseModel):
 
 
 class Workspace(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
+    id: str = Field(default_factory=lambda: uuid.uuid4().hex[:8])
     name: str
     is_archived: bool = False
     owner_id: str
@@ -35,7 +35,7 @@ class WorkspaceCreate(BaseModel):
 
 class WorkspacePatch(BaseModel):
     name: Optional[str] = None
-    settings: Optional[dict] = None
+    settings: Optional[WorkspaceSettings] = None
 
 
 class InviteAdd(BaseModel):
