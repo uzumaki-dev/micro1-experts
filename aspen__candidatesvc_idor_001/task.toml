@@ -13,7 +13,7 @@ instance_id = "aspen__candidatesvc_idor_001"
 pipeline = "testgen"
 task_type = "test_authoring"
 rubric_only = true
-base_commit = "FILL_AFTER_DOCKER_BUILD"
+base_commit = "c714a95cdf3173bdcbc3c2882cb37066c95e63b6"
 
 [verifier]
 timeout_sec = 1800.0
