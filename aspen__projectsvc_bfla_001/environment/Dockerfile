@@ -2,12 +2,13 @@ FROM python:3.12-slim
 
 ENV PIP_NO_CACHE_DIR=1 PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uvx /usr/local/bin/uvx
+
 RUN groupadd -r user && useradd -r -g user -u 1000 -m -d /home/user user \
  && apt-get update \
  && apt-get install -y --no-install-recommends git curl ca-certificates \
- && rm -rf /var/lib/apt/lists/* \
- && curl -LsSf https://astral.sh/uv/install.sh | UV_INSTALL_DIR=/usr/local/bin sh \
- && chmod 755 /usr/local/bin/uv /usr/local/bin/uvx
+ && rm -rf /var/lib/apt/lists/*
 
 ENV UV_PYTHON_INSTALL_DIR=/opt/uv-python
 RUN mkdir -p /opt/uv-python /opt/uv-cache \
