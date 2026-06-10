@@ -1,0 +1,41 @@
+schema_version = "1.2"
+artifacts = []
+
+[task]
+name = "aspen/aspen__projectsvc_bfla_001"
+description = "Author tests for projectsvc BFLA — a project management service fails to enforce admin role checks, letting any project member delete projects, archive them, manage membership, and read private audit log entries"
+authors = [{ name = "Zeeshan Amir", email = "zeam710@expert.micro1.ai" }]
+keywords = ["bfla", "access-control", "fastapi", "test-authoring", "security"]
+
+[metadata]
+source = "m1-rl-envs"
+environment_id = "aspen"
+instance_id = "aspen__projectsvc_bfla_001"
+pipeline = "aspen"
+task_type = "test_authoring"
+rubric_only = true
+image_digest = "sha256:FILL_AFTER_REALM_UPLOAD"
+base_commit = "FILL_AFTER_DOCKER_BUILD"
+
+[verifier]
+timeout_sec = 1800.0
+
+[verifier.env]
+ANTHROPIC_API_KEY = "${ANTHROPIC_API_KEY:-}"
+OPENAI_API_KEY = "${OPENAI_API_KEY:-}"
+
+[agent]
+timeout_sec = 3600.0
+
+[environment]
+build_timeout_sec = 3600.0
+cpus = 2
+memory_mb = 4096
+storage_mb = 10240
+gpus = 0
+allow_internet = true
+mcp_servers = []
+
+[environment.env]
+
+[solution.env]
