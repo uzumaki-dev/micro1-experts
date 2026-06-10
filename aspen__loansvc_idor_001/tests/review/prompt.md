@@ -1,31 +1,99 @@
-You are an experienced staff engineer evaluating whether a unified-diff submission contains tests that would catch a known set of ground-truth issues.
+You are an experienced staff engineer evaluating whether a unified-diff submission
+contains tests that would catch a known set of ground-truth issues.
 
 ## Task background
 
-This is an TestGen **test-authoring** task, where an agent was asked to write tests and *not* to fix application code. Those tests would catch a hidden rubric of issues and be graded by you. The base repo is checked out at `/repo` at the task's `base_commit`.
+This is an Aspen **test-authoring** task. The agent was *not* asked to fix application
+code; it was asked to write tests that would catch a hidden rubric of issues. The base
+repo is checked out at `/repo` at the task's `base_commit`. The service under test is
+`loansvc`, an in-memory multi-tenant loan application API (FastAPI). The caller is
+identified by the `X-User-Id` header; loans have an owner, optional co-applicants, a
+`visibility` of "private" or "public", private `underwriter_notes`, a `private_rate`
+billing field, fee-item `fee_code` fields, and document file attachments. The shipped
+code does not enforce ownership checks on any read, list, search, export, fees, or
+documents endpoint.
 
 ## Behavioral prompt the agent received
 
-<!--
-Judge rubric prompt. Instruct the judge to score the agent's authored tests
-against the [[criterion]] entries in agent_judge.toml: credit per criterion a
-test actually catches, penalize tests that pass on the vulnerable target.
+````
+# Aspen test-authoring task
 
-Replace this comment.
--->
+A borrower on our platform filed a bug report — they said they were browsing their loan
+applications and stumbled into another applicant's file. They saw underwriting remarks and
+fee details that clearly belong to someone else's application, and they've been reproducing
+it consistently across different loan IDs.
+
+We have no tests covering this. Your job is to write the test suite that catches it.
+
+**Write tests only. Do not modify any file under `loansvc/`.** A separate engineer will
+use your tests to validate their fix; for them to trust your tests, the suite must (1) catch
+the leak the borrower is exploiting and (2) catch a fix that over-blocks legitimate owner or
+admin flows.
+
+Put your tests under `tests/exfiltration/`. `tests/test_smoke.py` shows the legitimate
+owner and admin flows already in use — your suite should pin those down with anti-overblock
+assertions so they cannot regress.
+
+Submit only your test files as a unified diff via `submit_answer`
+(applies clean from `/repo`).
+
+
+## Working environment
+
+- The repository is checked out at `/repo` at the task's `base_commit`.
+- This is a **test-authoring** task. You are *not* asked to fix application
+  code; you are asked to write a test (or test suite) that catches the
+  documented behavior under a hidden rubric.
+- Your tests are expected to land under: `tests/exfiltration/`.
+
+
+## What to submit
+
+Write a unified diff of the test file(s) you would add to the repo, and save
+that diff (as text) to `/repo/answer.diff`. The verifier reads only
+`/repo/answer.diff` — the diff is graded as a text artifact, **never** applied
+to the working tree.
+
+The diff should follow standard `diff --git` format, e.g.:
+
+```
+diff --git a/tests/exfiltration/test_loan_idor.py b/tests/exfiltration/test_loan_idor.py
+new file mode 100644
+--- /dev/null
++++ b/tests/exfiltration/test_loan_idor.py
+@@ -0,0 +1,N @@
++# test body...
+```
+
+An agent-as-judge will compare your submitted diff against a hidden rubric of
+ground-truth issues — for each rubric item it asks: *would the test described
+by this diff catch this specific issue?*
+````
 
 ## Where the agent's submission lives
 
-The agent's submission is a unified-diff **text artifact** at `/repo/answer.diff` (relative to `/repo`: `answer.diff`).
+The agent's submission is a unified-diff **text artifact** at `/repo/answer.diff`
+(relative to `/repo`: `answer.diff`).
 
-You may read that file (and any sibling notes such as `notes.md`) and run read-only commands inside `/repo`. **Do not apply the diff and do not modify the workspace.** The diff is graded as text — what matters is whether the test code described in the diff *would* catch each rubric item if it were applied.
+You may read that file (and any sibling notes such as `notes.md`) and run read-only
+commands inside `/repo`. **Do not apply the diff and do not modify the workspace.**
+The diff is graded as text — what matters is whether the test code described in the
+diff *would* catch each rubric item if it were applied.
 
-The submission is expected to touch the following path prefixes (a hint, not a hard requirement): <!-- Define the test path here -->.
+The submission is expected to touch the following path prefix (a hint, not a hard
+requirement): `tests/exfiltration/`.
 
 ## Ground-truth rubric (hidden from the agent)
 
-The criteria are listed below. For each one, decide **binary**: does the diff include a test (or assertion within a test) that would specifically catch this issue, with enough precision (right path / right invariant / right boundary condition) that a real regression of this issue would fail the test? Generic smoke tests, vacuously-passing assertions, or tests that only exercise the legitimate flow without anti-overblock checks do **not** count.
+The criteria are listed below. For each one, decide **binary**: does the diff include
+a test (or assertion within a test) that would specifically catch this issue, with
+enough precision (right endpoint / right invariant / right boundary condition) that a
+real regression of this issue would fail the test? Generic smoke tests,
+vacuously-passing assertions, or tests that only check status codes without inspecting
+response body content do **not** count.
 
-If the diff contains test code that would break legitimate flows (over-blocks), that test still does **not** earn a point for any rubric item — and any explicit anti-overblock rubric items must fail.
+If the diff contains test code that would break legitimate flows (over-blocks), that
+test still does **not** earn a point for any rubric item — and any explicit
+anti-overblock rubric items must fail.
 
 {criteria}
