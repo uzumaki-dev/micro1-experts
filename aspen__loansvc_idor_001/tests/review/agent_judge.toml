@@ -1,0 +1,44 @@
+[judge]
+timeout = 600
+isolated = false
+cwd = "/repo"
+prompt_template = "prompt.md"
+
+[scoring]
+aggregation = "weighted_mean"
+
+[[criterion]]
+name = "rub_001"
+description = "<RUBRIC_DESCRIPTION>"
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_002"
+description = "<RUBRIC_DESCRIPTION>"
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_003"
+description = "<RUBRIC_DESCRIPTION>"
+type = "binary"
+weight = 2.0
+
+[[criterion]]
+name = "rub_004"
+description = "<RUBRIC_DESCRIPTION>"
+type = "binary"
+weight = 2.0
+
+[[criterion]]
+name = "rub_005"
+description = "<RUBRIC_DESCRIPTION>"
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_006"
+description = "<RUBRIC_DESCRIPTION>"
+type = "binary"
+weight = 1.0
