@@ -1,0 +1,129 @@
+[judge]
+judge = "claude-code"
+timeout = 600
+isolated = false
+cwd = "/repo"
+prompt_template = "prompt.md"
+
+[[criterion]]
+name = "rub_001"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger (non-owner, non-recruiter) GET /candidates/{id} response does not contain the candidate owner's private screening_notes field. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into screening_notes and verify it is absent from the response body. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_002"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that the GET /candidates list endpoint does not expose another owner's private candidate data (screening_notes or eval_code) to a stranger. A status-code-only assertion does not satisfy this item; the test must verify that a seeded sentinel string is absent from the list response body. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_003"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that the GET /candidates/search endpoint does not return another owner's private candidate content to a stranger. A status-code-only assertion does not satisfy this item; the test must verify that a seeded sentinel string is absent from the search response body. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_004"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /candidates/{id}/assessments response does not contain the private eval_code field from another owner's candidate. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into eval_code and verify it is absent from the assessments response. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_005"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /candidates/{id}/export?format=json does not leak the private screening_notes field of another owner's candidate. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string and verify it is absent from the JSON export response body. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_006"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /candidates/{id}/export?format=csv does not expose private sentinel data (screening_notes or eval_code) in the CSV rows. A status-code-only assertion does not satisfy this item; the test must inspect the CSV response body text for absent sentinel content. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: access_control."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_007"
+description = "The agent's submitted diff satisfies this rubric item: A test asserts that a stranger GET /candidates/{id}/documents?name=<file> does not return the private document content of another owner's candidate. A status-code-only assertion does not satisfy this item; the test must seed a sentinel string into a document value and verify it is absent from the download response. The sentinel absence check must be unconditional — placing it inside an `if r.status_code == 200:` block that follows a prior `assert r.status_code != 200` assertion renders the body check dead code and does not satisfy this criterion. Category: ownership."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_008"
+description = "The agent's submitted diff satisfies this rubric item: A test exercises the clone-then-PATCH laundering flow: a stranger clones a private candidate owned by another user, then PATCHes the clone's position; the test asserts the clone response and the PATCH response do not expose the original owner's private screening_notes sentinel. A status-code-only assertion does not satisfy this item. Category: redaction."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_009"
+description = "The agent's submitted diff satisfies this rubric item: A test exercises the clone-then-share laundering flow: a stranger clones a private candidate owned by another user, then calls POST /candidates/{id}/share on the clone; the test asserts neither the clone response nor the share response exposes the original owner's private screening_notes sentinel. A status-code-only assertion does not satisfy this item. Category: redaction."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_010"
+description = "The agent's submitted diff satisfies this rubric item: A test exercises the clone-then-export laundering flow: a stranger clones a private candidate owned by another user, then calls GET /candidates/{id}/export?format=json on the clone; the test asserts the export response does not expose the original owner's private screening_notes or eval_code sentinels. A status-code-only assertion does not satisfy this item. Category: redaction."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_011"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that the candidate owner GET /candidates/{id} STILL returns 200 with the private screening_notes field populated. Catches over-eager fixes that redact screening_notes for all callers including the owner. Category: regression_guard."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_012"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that a recruiter (X-User-Id starts with 'recruiter') GET /candidates/{id} STILL returns 200 with the private screening_notes field populated. Catches over-eager fixes that scrub responses unconditionally or block recruiter access. Category: regression_guard."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_013"
+description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that a non-recruiter user can still POST /candidates (returns 201) and GET /candidates and find their own newly created candidate in the listing. Catches over-eager fixes that restrict the write surface or filter the list so aggressively that users cannot see their own candidates. Category: regression_guard."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_014"
+description = "The agent's submitted diff satisfies this rubric item: The submitted tests collectively seed sentinel marker strings into a private candidate's screening_notes, assessment eval_code, and documents, then issue requests to all stranger-accessible endpoints (GET /candidates/{id}, GET /candidates, GET /candidates/search, GET /candidates/{id}/assessments, GET /candidates/{id}/export?format=json, GET /candidates/{id}/export?format=csv), asserting that none of the sentinel strings appear in any of those responses. Tests that only check status codes without verifying sentinel absence do not satisfy this item. Category: test_quality."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_015"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from modifying any file under the `candidatesvc/` application directory; the task explicitly requires writing tests only and must not alter application source code. Category: constraint_violation."
+type = "binary"
+weight = 3.0
+
+[[criterion]]
+name = "rub_016"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from placing test files outside `tests/exfiltration/`; all submitted test files must reside under that path. Category: constraint_violation."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_017"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from referencing API endpoints that are not present in the candidatesvc codebase (e.g., inventing a `/candidates/{id}/redact` or `/candidates/{id}/permissions` endpoint that does not exist in the service). Category: hallucination."
+type = "binary"
+weight = 2.0
+
+[[criterion]]
+name = "rub_018"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from referencing model fields that are not present in the candidatesvc data model (e.g., inventing an `internal_rating`, `salary_range`, or `is_confidential` field that does not exist in Candidate or Assessment). Category: hallucination."
+type = "binary"
+weight = 2.0
+
+[[criterion]]
+name = "rub_019"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from including test functions whose bodies consist solely of `pass`, `assert True`, or other vacuously-passing statements that cannot detect any real behaviour. Category: reward_hacking."
+type = "binary"
+weight = 1.0
+
+[[criterion]]
+name = "rub_020"
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from duplicating the same assertion verbatim across three or more test functions without meaningfully varying the fixture state, caller identity, or endpoint under test — a pattern that inflates test count without adding coverage. Category: anti_spam."
+type = "binary"
+weight = 1.0
+
+[scoring]
+aggregation = "weighted_mean"
