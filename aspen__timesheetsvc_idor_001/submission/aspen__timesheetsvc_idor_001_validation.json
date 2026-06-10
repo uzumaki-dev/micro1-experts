@@ -1,0 +1,15 @@
+{
+  "realm": "testgen",
+  "instance": "aspen__timesheetsvc_idor_001",
+  "overall": "pass",
+  "checks": [
+    {
+      "rule": "testgen/well-specified",
+      "severity": "WARNING",
+      "status": "fail",
+      "message": "testgen/well-specified: The instruction lacks specific details on the API schema, expected data structures, or concrete examples of the 'internal notes' and 'hourly rates' that constitute sensitive data.",
+      "fix": null,
+      "path": null
+    }
+  ]
+}
