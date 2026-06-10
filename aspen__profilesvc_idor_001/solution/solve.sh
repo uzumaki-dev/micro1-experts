@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Oracle: writes a complete IDOR test suite to /repo/answer.diff.
-# Covers all 14 positive rubric items; negative items satisfied by clean code.
+# Covers all 13 positive rubric items (rub_001–013, rub_021); negative items satisfied by clean code.
 set -euo pipefail
 
 mkdir -p "$(dirname "/repo/answer.diff")"

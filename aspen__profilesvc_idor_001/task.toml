@@ -1,8 +1,7 @@
 schema_version = "1.2"
-artifacts = []
 
 [task]
-name = "micro1/aspen__profilesvc_idor_001"
+name = "aspen/aspen__profilesvc_idor_001"
 description = "Write a test suite that catches IDOR vulnerabilities in a professional profile service — private summary notes and salary history leak to any authenticated caller across 7 distinct read surfaces plus a fork-laundering vector."
 authors = [{ name = "Zeeshan Amir", email = "zeam710@expert.micro1.ai" }]
 keywords = ["idor", "access-control", "fastapi", "test-authoring", "security"]
@@ -11,11 +10,10 @@ keywords = ["idor", "access-control", "fastapi", "test-authoring", "security"]
 source = "m1-rl-envs"
 environment_id = "aspen"
 instance_id = "aspen__profilesvc_idor_001"
-pipeline = "aspen"
+pipeline = "testgen"
 task_type = "test_authoring"
 rubric_only = true
-image_digest = "sha256:FILL_AFTER_REALM_UPLOAD"
-base_commit = "a99919117f1609d350b8e5afa7ee7aea1111601b"
+base_commit = "bc19dddbf0bc9d83f91fbfeabcc638c6bb185cb5"
 
 [verifier]
 timeout_sec = 1800.0
