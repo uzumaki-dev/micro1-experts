@@ -40,7 +40,7 @@ Raw scores: Opus 25/25 pts (2ac885c1), Qwen 9/25 pts (all runs).
 
 ### Per-Rubric Catch Rates
 
-Opus: 1 calibration run (2ac885c1). Qwen: 5 runs, all identical item-level verdicts.
+Opus: 1 calibration run (2ac885c1). Qwen: 4 runs, all identical item-level verdicts.
 
 | Criterion | Opus 4.7 | Qwen 3.5 |
 |-----------|----------|----------|
@@ -65,9 +65,9 @@ Opus: 1 calibration run (2ac885c1). Qwen: 5 runs, all identical item-level verdi
 
 - Oracle: 100% ✓
 - Opus 4.7: 100% (1 run) ✓ (target ≥80%)
-- Qwen 3.5 397B: 36% mean across 5 runs ✓ (target 25–50%)
+- Qwen 3.5 397B: 36% mean across 4 runs ✓ (target 25–50%)
 
 The gap is driven by rub_001–005 and rub_009 — Qwen never issues a GET after a mutation.
 It inspects only the PATCH/POST response body, which the rubric explicitly disqualifies.
-All 5 Qwen runs produced zero GET calls and identical item-level verdicts (0pp variance),
+All 4 Qwen runs produced zero GET calls and identical item-level verdicts (0pp variance),
 confirming near-deterministic inference on the Realm platform.
