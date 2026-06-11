@@ -40,57 +40,66 @@ would pass on buggy code and fail on fixed code — the wrong direction.
 
 ## Calibration Results
 
-Calibrated 2026-06-03. Opus (9611d567); Qwen across 4 runs after removing outlier
-043f6f09 (66.7%) — mean 47.95%. Oracle row carried from prior run (50f27bfb).
+Calibrated 2026-06-11 (post-rubric-rework). Opus run acad7282; Qwen across 4 valid runs —
+3 additional Qwen runs (4d2c0d42, 579607ca, 8a440679) scored 0% and are excluded as
+agent evaluation failures (no testable diff produced; all regression guards and negatives
+normally pass, so 0% indicates a crashed or empty submission rather than a genuine score).
 
 | Model | Run 1 | Run 2 | Run 3 | Run 4 | Mean |
 |-------|-------|-------|-------|-------|------|
-| Oracle (solve.sh) | 100% (50f27bfb) | — | — | — | 100% |
-| Claude Opus 4.7 | 91.7% (9611d567) | — | — | — | 91.7% |
-| Claude Haiku 4.5 | 100% (87097ebc) | — | — | — | 100% |
-| Qwen 3.5 397B | 41.7% (02281271) | 41.7% (895f9401) | 54.2% (67548c0c) | 54.2% (8754d6c9) | 47.95% |
+| Oracle (solve.sh) | 100% | — | — | — | 100% |
+| Claude Opus 4.7 | 87.5% (acad7282) | — | — | — | 87.5% |
+| Claude Haiku 4.5 | 100% (412660a0) | — | — | — | 100% |
+| Qwen 3.5 397B | 50.0% (9edc43ce) | 37.5% (86a83b9d) | 37.5% (f5f3bcbb) | 37.5% (77149600) | 40.6% |
 
-Outlier excluded: 043f6f09 (Qwen, 66.7%) — Qwen accidentally produced a sentinel-specific
-check on rub_004 in this run, pulling the mean above the 50% ceiling.
-
-Raw scores: Opus 22/24 pts (9611d567); Qwen mean ~11.5/24 pts across 4 runs.
+Raw scores: Opus 21/24 pts (acad7282); Qwen mean 9.75/24 pts across 4 valid runs.
 
 ### Per-Rubric Catch Rates
 
-Opus: 1 calibration run (9611d567). Qwen: 4 runs (02281271, 895f9401, 67548c0c, 8754d6c9).
+Opus: 1 calibration run (acad7282). Qwen: 4 runs (9edc43ce, 86a83b9d, f5f3bcbb, 77149600).
 
 | Criterion | Opus 4.7 | Qwen 3.5 |
 |-----------|----------|----------|
 | rub_001 (q= body-field sentinel) | 100% | 0% |
 | rub_002 (tag= tags-field sentinel) | 100% | 0% |
 | rub_003 (days= UNION SELECT injection) | 100% | 0% |
-| rub_004 (q= title-field sentinel, easy) | 100% | 50% |
+| rub_004 (q= title-field sentinel, easy baseline) | 100% | 25% |
 | rub_005 (q= count-bound comparison) | 0% | 0% |
 | rub_006 (legit q= search guard) | 100% | 100% |
 | rub_007 (legit tag= filter guard) | 100% | 100% |
 | rub_008 (legit days= recent guard) | 100% | 100% |
-| rub_009–015 (negatives) | 100% | 100% |
+| rub_009 (dual owner+attacker sentinel, test_quality) | 0% | 0% |
+| rub_010 (no vacuous bodies) | 100% | 100% |
+| rub_011 (no hallucinated endpoints) | 100% | 100% |
+| rub_012 (no wrong-direction assertions) | 100% | 100% |
+| rub_013 (no internal module assertions) | 100% | 100% |
+| rub_014 (no swallowed errors) | 100% | 100% |
+| rub_015 (no status-code-only checks) | 100% | 100% |
 
-Opus misses only rub_005 — it uses sentinel-content checks rather than the count-comparison
-invariant, losing 2 pts (2/24 = 8.3%). Qwen's floor is 10 pts from negatives and regression
-guards (41.7%); it gains rub_004 on 50% of runs when it happens to check title sentinel
-(+3 pts → 54.2%). Qwen consistently fails rub_001–003 because it relies on
-owner-isolation (`assert all(n['owner'] == attacker ...)`) rather than inspecting sentinel
-values in named body/tags fields.
+Opus misses rub_005 (count-comparison invariant, −2 pts) and rub_009 (dual-assertion
+test_quality, −1 pt), scoring 21/24 = 87.5%. Qwen's floor is 9 pts (37.5%) from six
+regression guards and six negative items that all agents pass; it gains rub_004 on 1/4
+runs (+3 pts → 50%) when it happens to check the title sentinel explicitly. rub_001–003
+consistently fail for Qwen because agents default to owner-isolation assertions
+(`assert all(n['owner'] == attacker ...)`) rather than inspecting named sentinel values
+in body/tags fields. rub_005 and rub_009 are universal misses — neither model writes
+the count-comparison nor the dual owner+attacker sentinel test in a single function.
 
 ## Discrimination Verdict
 
 **DISCRIMINATIVE**
 
-- Oracle: 100% (50f27bfb) ✓
-- Claude Opus 4.7: 91.7% (9611d567) ✓ (target ≥80%)
-- Qwen 3.5 397B: 47.95% mean across 4 runs ✓ (target 25–50%)
+- Oracle: 100% ✓
+- Claude Opus 4.7: 87.5% (acad7282) ✓ (target ≥80%)
+- Qwen 3.5 397B: 40.6% mean across 4 valid runs ✓ (target 25–50%)
 
-The gap is driven by rub_001–003: Opus seeds sentinels in body/tags/body respectively and
-checks those exact fields in the response; Qwen defaults to owner-isolation or title-only
-checks, failing all three. rub_005 (count-comparison) is a universal miss — both models
-use sentinel-presence checks rather than the result-count bounding invariant the criterion
-requires.
+The discrimination gap is driven by rub_001–003: Opus seeds sentinels in the body, tags,
+and body fields respectively and asserts their absence by inspecting the correct named field
+in the JSON response; Qwen defaults to owner-isolation checks (`if n['owner']=='victim'`)
+or boolean-tautology payloads (failing rub_003's UNION SELECT requirement), failing all
+three. rub_004 shows partial Qwen discrimination (25%); rub_005 and rub_009 are universal
+misses — both models use sentinel-presence or owner-isolation checks rather than the
+count-bounding and dual-direction assertions those criteria require.
 
 ## Submission Contract
 
@@ -107,10 +116,12 @@ Scoring uses weighted mean: `sum(score_i × weight_i) / sum(weight_i)`.
 
 - Total weight: 24.0 pts
 - Oracle achieves 24/24 = 100%
-- Opus achieves 22/24 = 91.7% (misses rub_005 count-comparison)
-- Qwen mean ~11.5/24 = 47.95% across 4 runs (floor from regression guards + negatives)
+- Opus achieves 21/24 = 87.5% (misses rub_005 count-comparison −2 pts, rub_009 dual-assertion −1 pt)
+- Qwen mean 9.75/24 = 40.6% across 4 valid runs (floor from regression guards + negatives)
 
-The Qwen floor is approximately 10/24 (41.7%) from regression guard items (rub_006–008)
-and negative items (rub_009–015) that most models pass by default. The effective
-discrimination range is rub_001–003 (sentinel-in-named-field checks), which Qwen
-consistently fails by using owner-isolation assertions instead.
+The Qwen floor is 9/24 (37.5%) from regression guard items (rub_006–008) and negative
+items (rub_010–015) that all agents pass by default. rub_009 (test_quality) is a universal
+miss — neither Opus nor Qwen writes the dual owner+attacker assertion in one function —
+so it lowers both scores equally and does not affect the discrimination gap. The effective
+discrimination range is rub_001–003 (sentinel-in-named-field checks, 9 pts), where Opus
+scores 100% and Qwen scores 0% across all 4 valid runs.
