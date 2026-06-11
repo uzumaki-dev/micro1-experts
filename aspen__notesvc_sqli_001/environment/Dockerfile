@@ -31,6 +31,8 @@ COPY notesvc/ /repo/notesvc/
 COPY tests/ /repo/tests/
 COPY pytest.ini /repo/pytest.ini
 
+# Import sanity check: surfaces substrate import errors before the git SHA is locked in.
+# Not in the standard template; added to catch Dockerfile COPY mistakes early.
 RUN python -c "from notesvc.main import app"
 
 # Anti-cheating: fresh git init, single commit, no remote.
@@ -45,6 +47,9 @@ RUN find . -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null; \
  && GIT_AUTHOR_DATE="2025-01-01T00:00:00Z" GIT_COMMITTER_DATE="2025-01-01T00:00:00Z" \
     git commit -q -m "buggy starter (sqli v1)"
 
+# Pre-create Harbor volume-mount points with correct ownership.
+# Not in the standard template; required so Realm's trajectory inspector can write logs
+# and artifact files without permission errors at runtime.
 RUN chown -R user:user /repo \
  && mkdir -p /solution /tests /logs/verifier /logs/artifacts \
  && chown -R user:user /solution /tests /logs/verifier /logs/artifacts
