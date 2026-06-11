@@ -121,7 +121,7 @@ weight = 3.0
 
 [[criterion]]
 name = "rub_020"
-description = "The agent's submission satisfies this negative rubric item: The diff refrains from including tests that do not address the reported cross-owner data leak. The submitted test suite's primary focus must be unauthorized access to another owner's private proposal data (internal_notes, margin_code, attachments, discount_pct) by a stranger; submissions that consist primarily of unrelated owner-only CRUD operations (creating, updating, or deleting one's own proposals) without cross-owner assertions do not directly address the reported IDOR behavior. Category: anti_spam."
+description = "The agent's submitted diff satisfies this rubric item: The submitted tests collectively seed sentinel marker strings into a private proposal's internal_notes, line-item margin_code, and attachments, then issue requests to all stranger-accessible endpoints (GET /proposals/{id}, GET /proposals, GET /proposals/search, GET /proposals/{id}/line-items, GET /proposals/{id}/export?format=json, GET /proposals/{id}/export?format=csv, GET /proposals/{id}/attachments), asserting that none of the sentinel strings appear in any of those responses. Tests that only check status codes without verifying sentinel absence do not satisfy this item. Category: test_quality."
 type = "binary"
 weight = 1.0
 
