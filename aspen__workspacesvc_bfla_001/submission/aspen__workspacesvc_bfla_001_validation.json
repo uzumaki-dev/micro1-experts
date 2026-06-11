@@ -1,0 +1,23 @@
+{
+  "realm": "testgen",
+  "instance": "aspen__workspacesvc_bfla_001",
+  "overall": "pass",
+  "checks": [
+    {
+      "rule": "testgen/well-specified",
+      "severity": "WARNING",
+      "status": "fail",
+      "message": "testgen/well-specified: The instruction lacks specific details about the API endpoints, data structures, or expected error codes for the described security incidents, making it difficult to write equivalent verification algorithms.",
+      "fix": null,
+      "path": null
+    },
+    {
+      "rule": "testgen/solvable",
+      "severity": "WARNING",
+      "status": "fail",
+      "message": "testgen/solvable: Without knowledge of the `workspacesvc/` API or internal structure, a domain expert would likely need more than a few hours to implement a comprehensive test suite for the described issues.",
+      "fix": null,
+      "path": null
+    }
+  ]
+}

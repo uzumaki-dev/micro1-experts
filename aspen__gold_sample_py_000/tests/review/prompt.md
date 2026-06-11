@@ -16,7 +16,6 @@ We don't have any tests covering this. Your job is to write the test suite that 
 Put your tests under `tests/exfiltration/`. `tests/test_smoke.py` shows the legitimate participant + admin flows already in use — your suite should pin those down with anti-overblock assertions so they cannot regress.
 
 Submit only your test files as a unified diff via `submit_answer` (applies clean from `/repo`).
-
 ```
 
 ## Where the agent's submission lives
@@ -25,9 +24,7 @@ The agent's submission is a unified-diff **text artifact** at `/repo/answer.diff
 
 You may read that file (and any sibling notes such as `notes.md`) and run read-only commands inside `/repo`. **Do not apply the diff and do not modify the workspace.** The diff is graded as text — what matters is whether the test code described in the diff *would* catch each rubric item if it were applied.
 
-
 The submission is expected to touch the following path prefixes (a hint, not a hard requirement): `tests/exfiltration/`.
-
 
 ## Ground-truth rubric (hidden from the agent)
 

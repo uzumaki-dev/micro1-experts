@@ -1,0 +1,31 @@
+{
+  "realm": "testgen",
+  "instance": "aspen__candidatesvc_idor_001",
+  "overall": "pass",
+  "checks": [
+    {
+      "rule": "no_bloat_directories",
+      "severity": "WARNING",
+      "status": "fail",
+      "message": "generated/dependency directories found that bloat the submission: environment/.pytest_cache, environment/.venv. Remove any not needed for the task to build or run before submitting.",
+      "fix": null,
+      "path": "/Users/hamzahmanzoor/Desktop/micro1-experts/aspen__candidatesvc_idor_001"
+    },
+    {
+      "rule": "testgen/well-specified",
+      "severity": "WARNING",
+      "status": "fail",
+      "message": "testgen/well-specified: The instruction lacks specific details on the API schema, expected data, or concrete examples of the 'confidential screening notes' or 'interview evaluation details' to be protected.",
+      "fix": null,
+      "path": null
+    },
+    {
+      "rule": "testgen/solvable",
+      "severity": "WARNING",
+      "status": "fail",
+      "message": "testgen/solvable: Without access to the API, its documentation, or the `candidatesvc/` code, a domain expert cannot implement the tests in a few hours.",
+      "fix": null,
+      "path": null
+    }
+  ]
+}
