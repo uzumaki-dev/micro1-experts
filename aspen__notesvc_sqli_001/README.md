@@ -8,13 +8,24 @@ helpers in `notesvc/db.py` use raw f-string interpolation — unsanitized user i
 data isolation and read notes belonging to other users via UNION injection.
 
 Rubric: 15 items, total weight 24.0.
-- rub_001: body-field sentinel check on q= surface (weight 3 = 3 pts)
-- rub_002: tags-field sentinel check on tag= surface (weight 3 = 3 pts)
-- rub_003: UNION injection on days= surface (weight 3 = 3 pts)
-- rub_004: title-field sentinel check on q= surface — easy baseline (weight 3 = 3 pts)
-- rub_005: count-based result-set bound on q= surface (weight 2 = 2 pts)
-- rub_006–008: Regression_guard anti-overblock items (weight 1 each = 3 pts)
-- rub_009–015: negative criteria (weight 1 each = 7 pts)
+
+| Criterion | Surface | Weight | Category |
+|-----------|---------|--------|----------|
+| rub_001 | q= body-field sentinel check | 3.0 | access_control |
+| rub_002 | tag= tags-field sentinel check | 3.0 | access_control |
+| rub_003 | days= UNION SELECT injection | 3.0 | access_control |
+| rub_004 | q= title-field sentinel check (easy baseline) | 3.0 | access_control |
+| rub_005 | q= count-bound result-set comparison | 2.0 | access_control |
+| rub_006 | legit q= search regression guard | 1.0 | Regression_guard |
+| rub_007 | legit tag= filter regression guard | 1.0 | Regression_guard |
+| rub_008 | legit days= recent regression guard | 1.0 | Regression_guard |
+| rub_009 | dual owner+attacker sentinel assertion | 1.0 | test_quality |
+| rub_010 | no vacuous pass/True bodies | 1.0 | reward_hacking |
+| rub_011 | no hallucinated endpoints or fields | 1.0 | hallucination |
+| rub_012 | no wrong-direction exploit assertions | 1.0 | reward_hacking |
+| rub_013 | no internal notesvc module assertions | 1.0 | constraint_violation |
+| rub_014 | no swallowed assertion errors | 1.0 | reward_hacking |
+| rub_015 | no status-code-only leakage checks | 1.0 | reward_hacking |
 
 rub_001–004 require explicit sentinel-value inspection in a named response field (e.g.,
 `assert sentinel not in [n['body'] for n in r.json()]`); owner-isolation-only assertions
@@ -22,6 +33,10 @@ rub_001–004 require explicit sentinel-value inspection in a named response fie
 rub_003 additionally requires a UNION SELECT payload — boolean tautologies do not satisfy.
 rub_005 requires a count-comparison (`len(injected) <= len(legit)`) against the attacker's
 own legitimate result count, not a bare `len(r.json()) > 0`.
+rub_009 requires both the owner-confirmation side and the attacker-exclusion side — attacker-only
+absence checks do not satisfy.
+rub_012 disqualifies tests written as proof-of-concept (asserting the leak IS present), which
+would pass on buggy code and fail on fixed code — the wrong direction.
 
 ## Calibration Results
 
@@ -76,3 +91,26 @@ checks those exact fields in the response; Qwen defaults to owner-isolation or t
 checks, failing all three. rub_005 (count-comparison) is a universal miss — both models
 use sentinel-presence checks rather than the result-count bounding invariant the criterion
 requires.
+
+## Submission Contract
+
+The agent writes its complete test suite as a unified diff to `/repo/answer.diff`. The diff
+must apply cleanly from `/repo` via `git apply --check`. The verifier reads this file as plain
+text and passes it to the LLM judge — the diff is never applied to the working tree.
+
+Tests must be placed under `tests/exfiltration/` and must be pytest-compatible. The agent
+must not modify any file under `notesvc/`.
+
+## Reward Details
+
+Scoring uses weighted mean: `sum(score_i × weight_i) / sum(weight_i)`.
+
+- Total weight: 24.0 pts
+- Oracle achieves 24/24 = 100%
+- Opus achieves 22/24 = 91.7% (misses rub_005 count-comparison)
+- Qwen mean ~11.5/24 = 47.95% across 4 runs (floor from regression guards + negatives)
+
+The Qwen floor is approximately 10/24 (41.7%) from regression guard items (rub_006–008)
+and negative items (rub_009–015) that most models pass by default. The effective
+discrimination range is rub_001–003 (sentinel-in-named-field checks), which Qwen
+consistently fails by using owner-isolation assertions instead.

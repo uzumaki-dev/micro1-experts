@@ -3,7 +3,7 @@ set -uo pipefail
 
 mkdir -p /logs/artifacts /logs/verifier
 
-TEST_LOG=$(mktemp /tmp/aspen-verifier.XXXXXX.log)
+TEST_LOG=/logs/verifier/verifier.log
 export TEST_LOG
 
 cleanup_and_reward() {

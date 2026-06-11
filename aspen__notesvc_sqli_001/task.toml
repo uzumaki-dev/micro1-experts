@@ -11,11 +11,11 @@ keywords = ["sqli", "sql-injection", "fastapi", "sqlite", "test-authoring", "sec
 source = "m1-rl-envs"
 environment_id = "aspen"
 instance_id = "aspen__notesvc_sqli_001"
-pipeline = "aspen"
+pipeline = "testgen"
 task_type = "test_authoring"
 rubric_only = true
 image_digest = "sha256:FILL_AFTER_REALM_UPLOAD"
-base_commit = "e374e15ef5daa99463afa858ce68a7a5374d2f5b"
+base_commit = "618c41a9916df84adc7bd1fa38fa00320880717b"
 
 [verifier]
 timeout_sec = 1800.0

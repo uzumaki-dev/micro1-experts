@@ -31,6 +31,8 @@ COPY notesvc/ /repo/notesvc/
 COPY tests/ /repo/tests/
 COPY pytest.ini /repo/pytest.ini
 
+RUN python -c "from notesvc.main import app"
+
 # Anti-cheating: fresh git init, single commit, no remote.
 # Dates pinned so SHA is stable across rebuilds.
 # __pycache__ purged before git add to keep SHA clean.
@@ -43,7 +45,9 @@ RUN find . -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null; \
  && GIT_AUTHOR_DATE="2025-01-01T00:00:00Z" GIT_COMMITTER_DATE="2025-01-01T00:00:00Z" \
     git commit -q -m "buggy starter (sqli v1)"
 
-RUN chown -R user:user /repo
+RUN chown -R user:user /repo \
+ && mkdir -p /solution /tests /logs/verifier /logs/artifacts \
+ && chown -R user:user /solution /tests /logs/verifier /logs/artifacts
 USER user
 
 RUN uvx --python 3.13 --from 'harbor-rewardkit[all]' rewardkit --help 2>&1 || true
