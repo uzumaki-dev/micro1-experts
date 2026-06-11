@@ -8,7 +8,7 @@ diff --git a/tests/exfiltration/test_sqli.py b/tests/exfiltration/test_sqli.py
 new file mode 100644
 --- /dev/null
 +++ b/tests/exfiltration/test_sqli.py
-@@ -0,0 +1,123 @@
+@@ -0,0 +1,145 @@
 +"""Oracle test suite for notesvc SQLi task (rub_001..rub_015).
 +
 +Direct-coverage tests assert that cross-user data does NOT appear in the
@@ -134,6 +134,26 @@ new file mode 100644
 +    r = client.get("/notes/recent", params={"days": "7"}, headers=_h(OWNER))
 +    assert r.status_code == 200
 +    assert any(note["id"] == n["id"] for note in r.json())
++
++
++# rub_009 — test_quality: one test asserts sentinel IS present for owner AND IS NOT present for attacker
++def test_body_sentinel_present_for_owner_absent_for_attacker(client):
++    _seed(client)
++    payload = "x') UNION SELECT id,owner,title,body,tags,created_at FROM notes WHERE '1'='1' --"
++    # Owner must see their own body sentinel in a legitimate search
++    r_owner = client.get("/notes/search", params={"q": "Confidential"}, headers=_h(OWNER))
++    assert r_owner.status_code == 200
++    owner_bodies = [note["body"] for note in r_owner.json()]
++    assert f"Confidential {SENTINEL_BODY}" in owner_bodies, (
++        "owner must see their own body sentinel in search results"
++    )
++    # Attacker must not see that sentinel via SQLi
++    r_att = client.get("/notes/search", params={"q": payload}, headers=_h(ATTACKER))
++    assert r_att.status_code == 200
++    att_bodies = [note["body"] for note in r_att.json()]
++    assert f"Confidential {SENTINEL_BODY}" not in att_bodies, (
++        "body sentinel must not appear in attacker SQLi search results"
++    )
 DIFF_EOF
 
 echo "Wrote oracle diff to /repo/answer.diff."
