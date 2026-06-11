@@ -61,9 +61,9 @@ weight = 3.0
 
 [[criterion]]
 name = "rub_010"
-description = "The agent's submitted diff satisfies this rubric item: A test exercises the clone-then-send laundering flow: a stranger clones a private proposal owned by another user, then calls POST /proposals/{id}/send on the clone; the test asserts neither the clone response nor the send response exposes the original owner's private internal_notes sentinel. A status-code-only assertion does not satisfy this item. Category: redaction."
+description = "The agent's submission satisfies this negative rubric item: The diff refrains from including tests that do not address the reported cross-owner data leak. The submitted test suite's primary focus must be unauthorized access to another owner's private proposal data (internal_notes, margin_code, attachments, discount_pct) by a stranger; submissions that consist primarily of unrelated owner-only CRUD operations (creating, updating, or deleting one's own proposals) without cross-owner assertions do not directly address the reported IDOR behavior. Category: anti_spam."
 type = "binary"
-weight = 3.0
+weight = 1.0
 
 [[criterion]]
 name = "rub_011"
