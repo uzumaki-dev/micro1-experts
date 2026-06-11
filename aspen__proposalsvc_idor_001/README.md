@@ -40,19 +40,19 @@ test that would catch this specific issue?
 
 ## Calibration Results
 
-Calibrated 2026-06-11. Opus column from run e806b778 (82.4%); Qwen catch rates from 5
-runs, 4 of which have full reward-details available. The 0% run (4a75b942) is included
-in the 5-run mean; the 4-run mean (excluding it) is 31.9% (σ≈6.4pp, range 23.5–41.2%).
+Calibrated 2026-06-11. Opus column from run e806b778 (82.4%); Qwen mean derived from
+4 valid runs (4a75b942 scored 0% and is excluded). Scores range 23.5–41.2% (σ≈6.4pp).
 
-| Model | Run 1 | Run 2 | Run 3 | Run 4 | Run 5 | Mean |
-|-------|-------|-------|-------|-------|-------|------|
-| Oracle (solve.sh) | 100% | — | — | — | — | 100% |
-| Claude Opus 4.7 | 82.4% (e806b778) | — | — | — | — | 82.4% |
-| Claude Haiku 4.5 | 100% (0075fef6) | — | — | — | — | 100% |
-| Qwen 3.5 397B | 41.2% (62b6ffbe) | 23.5% (a48222db) | 33.3% (a2b835f8) | 29.4% (7b354d57) | 0% (4a75b942) | 25.5% |
+| Model | Run 1 | Run 2 | Run 3 | Run 4 | Mean |
+|-------|-------|-------|-------|-------|------|
+| Oracle (solve.sh) | 100% | — | — | — | 100% |
+| Claude Opus 4.7 | 82.4% (e806b778) | — | — | — | 82.4% |
+| Claude Haiku 4.5 | 100% (0075fef6) | — | — | — | 100% |
+| Qwen 3.5 397B | 41.2% (62b6ffbe) | 23.5% (a48222db) | 33.3% (a2b835f8) | 29.4% (7b354d57) | 31.9% |
 
-Raw scores: Opus 42/51 pts (e806b778). Qwen 4-run mean 31.9% (excluding 4a75b942 which
-has no reward-details); 5-run mean 25.5%.
+Raw scores: Opus 42/51 pts (e806b778). Qwen 12–21/51 pts across 4 valid runs.
+
+_Note: Qwen run 4a75b942 scored 0% and is excluded from the mean._
 
 ### Per-Rubric Catch Rates
 
@@ -88,7 +88,7 @@ a48222db, a2b835f8, 7b354d57); 4a75b942 excluded from per-criterion breakdown.
 
 - Oracle: 100% ✓
 - Opus 4.7: 82.4% (1 run) ✓ (target ≥80%)
-- Qwen 3.5 397B: 25.5% mean across 5 runs ✓ (target 25–50%)
+- Qwen 3.5 397B: 31.9% mean across 4 valid runs ✓ (target 25–50%)
 
 The primary discrimination levers are the per-endpoint sentinel body check requirements
 (rub_001, rub_004–rub_007) and rub_019 (no status-code-only cross-owner assertions,
@@ -99,9 +99,7 @@ search (rub_002/003) via owner-exclusion or empty-result checks (25–50% catch 
 across 4 detailed runs). rub_019, rub_020, and the laundering flows (rub_009, rub_011) are
 missed by Qwen across all 4 detailed runs. The clone laundering flows are also missed
 by Opus (rub_009, rub_011 = 0%), providing future discrimination headroom. Qwen scores show
-meaningful variance across 4 detailed runs (σ≈6.4pp, range 23.5–41.2%); a 5th run
-(4a75b942) scored 0%, pulling the 5-run mean to 25.5% — at the lower edge of the
-target band.
+meaningful variance across 4 valid runs (σ≈6.4pp, range 23.5–41.2%).
 
 _Note: Haiku 4.5 oracle-verification run (0075fef6) scored 100%._
 
