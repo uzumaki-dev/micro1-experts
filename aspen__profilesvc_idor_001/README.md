@@ -22,51 +22,47 @@ All direct-coverage items require sentinel-based content inspection; status-code
 assertions do not satisfy rub_001–009, rub_011, rub_014, rub_022.
 
 Note: rub_009 and rub_011 were split from the original compound criteria (each previously
-checked two behaviors in one item). rub_014 and rub_022 are the new items from those splits;
-their individual catch rates have not been calibrated — per-criterion data below reflects the
-pre-split compound item scores. rub_010 (public-visibility guard) and rub_021 (sentinel
-dual-direction) were dropped to stay within the 20-item cap. rub_018 was strengthened from
-anti_spam to a sentinel isolation check (agent must seed custom sentinel strings, not reuse
-smoke-test fixture values).
+checked two behaviors in one item). rub_014 and rub_022 are the items from those splits.
+rub_010 (public-visibility guard) and rub_021 (sentinel dual-direction) were dropped to
+stay within the 20-item cap. rub_018 was strengthened from anti_spam to a sentinel isolation
+check (agent must seed custom sentinel strings, not reuse smoke-test fixture values).
 
 ## Calibration Results
 
-Calibrated 2026-06-10. Run 5e366862 (Opus, 0%) excluded — pre-fix environment failure.
-Opus column from run 85ab57d8 (86.7%); Qwen catch rates derived from all four runs.
-Docker image SHA verified: `git -C /repo rev-parse HEAD` inside the built container
-returns `0dedd2da25bc042fc522ec0d46feec8094d5086a`, matching `metadata.base_commit`.
+Calibrated 2026-06-12. Opus column from run 6a3d0278 (86.4%); Qwen catch rates derived
+from all four runs. Docker image SHA verified: `git -C /repo rev-parse HEAD` inside the
+built container returns `0dedd2da25bc042fc522ec0d46feec8094d5086a`, matching `metadata.base_commit`.
 
 | Model | Run 1 | Run 2 | Run 3 | Run 4 | Mean |
 |-------|-------|-------|-------|-------|------|
 | Oracle (solve.sh) | 100% (9a2de537) | — | — | — | 100% |
-| Claude Opus 4.7 | 86.7% (85ab57d8) | — | — | — | 86.7% |
-| Qwen 3.5 397B | 33.3% (5555f226) | 57.8% (141ada43) | 40.0% (4e1ba5a5) | 51.1% (9effe8d2) | 45.6% |
+| Claude Opus 4.7 | 86.4% (6a3d0278) | — | — | — | 86.4% |
+| Qwen 3.5 397B | 43.2% (9c0d29a0) | 36.4% (ac18146a) | 47.7% (e086ece1) | 50.0% (34d58a4c) | 44.3% |
+| Claude Haiku 4.5 | 100% (a8e53ba5) | — | — | — | 100% |
 
-Raw scores: Opus 39/45 pts (85ab57d8), Qwen 15/45 pts (5555f226).
-Note: scores above were recorded before the rub_009/rub_011 split; total weight is now 44.
+Raw scores: Opus 38/44 pts (6a3d0278), Qwen lowest 16/44 pts (ac18146a).
 
 ### Per-Rubric Catch Rates
 
-Opus: 1 calibration run (85ab57d8). Qwen: averaged across all four runs
-(5555f226, 141ada43, 4e1ba5a5, 9effe8d2).
-Items marked † reflect pre-split compound criterion scores; rub_014 and rub_022 are new
-splits not yet individually calibrated. Negative criteria (rub_015–020) pass universally
-for competent agents and serve as baseline integrity guards, not discrimination drivers.
+Opus: 1 calibration run (6a3d0278). Qwen: averaged across all four runs
+(9c0d29a0, ac18146a, e086ece1, 34d58a4c).
+Negative criteria (rub_015–020) pass universally for competent agents and serve as
+baseline integrity guards, not discrimination drivers.
 
 | Criterion | Opus 4.7 | Qwen 3.5 |
 |-----------|----------|----------|
-| rub_001 (GET /{id} private_summary sentinel) | 100% | 25% |
-| rub_002 (list private_summary sentinel) | 100% | 50% |
-| rub_003 (search private_summary sentinel) | 100% | 75% |
+| rub_001 (GET /{id} private_summary sentinel) | 100% | 50% |
+| rub_002 (list private_summary sentinel) | 100% | 25% |
+| rub_003 (search private_summary sentinel) | 100% | 100% |
 | rub_004 (experience salary_band sentinel) | 100% | 0% |
-| rub_005 (export json private_summary sentinel) | 100% | 0% |
+| rub_005 (export json private_summary sentinel) | 100% | 25% |
 | rub_006 (export csv private_summary+salary_band sentinel) | 100% | 0% |
 | rub_007 (document download sentinel) | 100% | 0% |
-| rub_008 (path traversal sentinel) | 100% | 50% |
-| rub_009 (fork response — private_summary) † | 0% | 0% |
-| rub_014 (fork-then-PATCH — PATCH response) — not calibrated | — | — |
-| rub_011 (fork-then-export — private_summary) † | 0% | 0% |
-| rub_022 (fork-then-export — salary_band) — not calibrated | — | — |
+| rub_008 (path traversal sentinel) | 100% | 25% |
+| rub_009 (fork response — private_summary) | 100% | 0% |
+| rub_014 (fork-then-PATCH — PATCH response) | 0% | 0% |
+| rub_011 (fork-then-export — private_summary) | 0% | 0% |
+| rub_022 (fork-then-export — salary_band) | 0% | 0% |
 | rub_012 (owner sees own private_summary — guard) | 100% | 100% |
 | rub_013 (admin sees private_summary — guard) | 100% | 100% |
 | rub_015 (no profilesvc/ modifications) | 100% | 100% |
@@ -81,16 +77,16 @@ for competent agents and serve as baseline integrity guards, not discrimination 
 **DISCRIMINATIVE**
 
 - Oracle: 100% ✓
-- Opus 4.7: 86.7% (1 run) ✓ (target ≥80%)
-- Qwen 3.5 397B: 45.6% mean across 4 runs ✓ (target 25–50%)
+- Opus 4.7: 86.4% (1 run) ✓ (target ≥80%)
+- Qwen 3.5 397B: 44.3% mean across 4 runs ✓ (target 25–50%)
 
-The gap is driven by rub_001 and rub_004–007 (sentinel-absence checks on direct GET,
-experience, export json, export csv, and document endpoints) — Qwen scores 0% on these
-across all four runs, consistently falling back to status-code-only assertions. rub_003
-(search) and rub_008 (path traversal) show partial Qwen pickup at 75% and 50%
-respectively. rub_009 and rub_011 (fork response and fork-then-export laundering) are the
-items Opus also misses — Opus writes fork tests that inspect the fork response only,
-without chaining into a subsequent PATCH or export call. The split rub_014 and rub_022
-are expected to remain 0% for Opus (same behavioral gap); rub_009 and rub_011 may score
-higher now that each checks a single response. Original compound items (weight 3 each = 6 pts
-lost) accounted for Opus's 13.3% gap from 100% under the pre-split rubric.
+The gap is driven by rub_004, rub_006, rub_007 (experience salary_band, CSV export,
+document download) — Qwen scores 0% across all four runs on these, consistently falling
+back to status-code-only assertions. rub_001 (direct GET) shows partial Qwen pickup at
+50%; rub_002 (list), rub_005 (JSON export), and rub_008 (path traversal) each land at
+25%. rub_003 (search) is caught by all four Qwen runs (100%) — Qwen reliably constructs
+result-count assertions but stops short of sentinel-string body inspection on direct
+access endpoints. rub_009/011/014/022 (fork laundering chain) are missed by all Qwen
+runs; Opus catches the fork response itself (rub_009, 100%) but misses the subsequent
+PATCH and export chain (rub_014, rub_011, rub_022, all 0%). Opus's 13.6% gap from 100%
+is accounted for entirely by those three fork-chain items (6 pts on 44).
