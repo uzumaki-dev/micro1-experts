@@ -3,18 +3,7 @@ contains tests that would catch a known set of ground-truth issues.
 
 ## Task background
 
-This is an Aspen **test-authoring** task. The agent was *not* asked to fix application
-code; it was asked to write tests that would catch a hidden rubric of issues. The base
-repo is checked out at `/repo` at the task's `base_commit`. The service under test is
-`profilesvc`, an in-memory multi-tenant professional profile management API (FastAPI).
-The caller is identified by the `X-User-Id` header; the user with ID `admin` is a
-privileged administrator — all others are regular users who own only the profiles they
-create. Profiles carry a `private_summary` field (private HR/recruiter notes) and
-experience entries with a `salary_band` field (private salary information). Private
-documents can be attached via the `documents` dict. The shipped (buggy) code does not
-enforce ownership checks on any read, list, search, export, experience, or document
-endpoint — all authenticated callers receive the full payload including `private_summary`,
-`salary_band` in experience entries, and private document contents.
+This is an Aspen **test-authoring** task. The agent was *not* asked to fix application code; it was asked to write tests that would catch a hidden rubric of issues. The base repo is checked out at `/repo` at the task's `base_commit`.
 
 ## Behavioral prompt the agent received
 

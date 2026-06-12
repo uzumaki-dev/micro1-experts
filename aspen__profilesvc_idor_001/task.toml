@@ -13,7 +13,7 @@ instance_id = "aspen__profilesvc_idor_001"
 pipeline = "testgen"
 task_type = "test_authoring"
 rubric_only = true
-base_commit = "bc19dddbf0bc9d83f91fbfeabcc638c6bb185cb5"
+base_commit = "0dedd2da25bc042fc522ec0d46feec8094d5086a"
 
 [verifier]
 timeout_sec = 1800.0

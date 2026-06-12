@@ -29,7 +29,6 @@ def create_profile(body: ProfileCreate, x_user_id: str = Header(...)) -> Profile
 
 @app.get("/profiles")
 def list_profiles(x_user_id: str = Header(...)) -> list[Profile]:
-    # BUG: returns all profiles regardless of ownership
     return store.list_all()
 
 
@@ -37,7 +36,6 @@ def list_profiles(x_user_id: str = Header(...)) -> list[Profile]:
 def search_profiles(
     q: str = Query(""), x_user_id: str = Header(...)
 ) -> list[Profile]:
-    # BUG: searches across all profiles regardless of ownership
     q_lower = q.lower()
     return [
         p
@@ -51,7 +49,6 @@ def get_profile(profile_id: str, x_user_id: str = Header(...)) -> Profile:
     p = store.get(profile_id)
     if p is None:
         raise HTTPException(status_code=404, detail="Not found")
-    # BUG: no ownership check — any authenticated user can read any profile
     return p
 
 
@@ -60,7 +57,6 @@ def get_experience(profile_id: str, x_user_id: str = Header(...)):
     p = store.get(profile_id)
     if p is None:
         raise HTTPException(status_code=404, detail="Not found")
-    # BUG: no ownership check — salary_band exposed to anyone
     return p.experience
 
 
@@ -73,7 +69,6 @@ def export_profile(
     p = store.get(profile_id)
     if p is None:
         raise HTTPException(status_code=404, detail="Not found")
-    # BUG: no ownership check
     if format == "csv":
         output = io.StringIO()
         writer = csv.writer(output)
@@ -104,10 +99,8 @@ def get_document(
     p = store.get(profile_id)
     if p is None:
         raise HTTPException(status_code=404, detail="Not found")
-    # BUG: no ownership check
     content = p.documents.get(name)
     if content is None:
-        # BUG: naive path traversal — resolves ../<other_id>/<file> across all profiles
         parts = name.replace("\\", "/").split("/")
         if len(parts) >= 2:
             other_file = parts[-1]
@@ -138,15 +131,14 @@ def fork_profile(profile_id: str, x_user_id: str = Header(...)) -> Profile:
     p = store.get(profile_id)
     if p is None:
         raise HTTPException(status_code=404, detail="Not found")
-    # BUG: inherits private_summary and documents from victim without scrubbing
     return store.create(
         owner_id=x_user_id,
         display_name=p.display_name,
         headline=p.headline,
         skills=list(p.skills),
         experience=list(p.experience),
-        private_summary=p.private_summary,   # BUG: copies private notes
-        documents=dict(p.documents),          # BUG: copies private documents
+        private_summary=p.private_summary,
+        documents=dict(p.documents),
         collaborators=[],
         visibility="private",
     )
