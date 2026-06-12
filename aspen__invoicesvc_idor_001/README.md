@@ -9,56 +9,59 @@ sensitive `internal_notes`, line-item `cost_code` fields, and attachment bytes. 
 `duplicate` endpoint additionally inherits private fields verbatim, enabling a
 laundering pattern (duplicate → PATCH/share/export).
 
-The agent must write a sentinel-based test suite covering 11 direct-coverage surfaces
-and 6 anti-overblock regression guards.
+The agent must write a sentinel-based test suite covering 8 direct-coverage surfaces,
+1 sentinel-sweep quality check, and 5 anti-overblock regression guards.
 
 ## Calibration Results
 
-Calibrated 2026-06-01. Qwen scores vary run-to-run (model is not deterministic).
+Calibrated 2026-06-12. Qwen scores vary run-to-run (model is not deterministic).
 
 | Model | Run 1 | Run 2 | Run 3 | Run 4 | Mean |
 |-------|-------|-------|-------|-------|------|
 | Oracle (solve.sh) | 100% | — | — | — | 100% |
-| Claude Opus 4.7 | 81.6% (45e04c70) | — | — | — | 81.6% |
-| Qwen 3.5 397B | 40.8% (2c189e57) | 44.9% (c7dc318a) | 44.9% (26cdabc9) | 44.9% (ef435a2a) | 43.9% |
+| Claude Opus 4.7 | 100% (fb8fe660) | — | — | — | 100% |
+| Qwen 3.5 397B | 44.4% (fe771f9a) | 35.6% (bc94aa52) | 44.4% (920ca8b0) | 40.0% (22a45c21) | 41.1% |
 
-Raw scores: Opus 40/49 pts (45e04c70), Qwen 22/49 pts (ef435a2a).
+Raw scores: Opus 45/45 pts (fb8fe660), Qwen mean 18.5/45 pts across 4 runs.
 
 ### Per-Rubric Catch Rates
 
-Opus: 1 calibration run (45e04c70). Qwen: 4 calibration runs; 3 runs scored 44.9%
-(22/49 pts, same item pattern as ef435a2a), 1 run scored 40.8% (20/49 pts, missing
-one weight-2 item — rub_015 most likely).
+Opus: 1 calibration run (fb8fe660). Qwen: 4 calibration runs; catch rates computed
+across all 4 runs (0% = never caught, 100% = caught every run).
 
-| Criterion | Opus 4.7 | Qwen 3.5 |
-|-----------|----------|----------|
-| rub_001 (GET /invoices/{id} — sentinel check) | 100% | 0% |
-| rub_002 (list — sentinel check) | 100% | 100% |
-| rub_003 (search — sentinel check) | 100% | 100% |
-| rub_004 (line-items — sentinel check) | 100% | 0% |
-| rub_005 (export json — sentinel check) | 100% | 0% |
-| rub_006 (export csv — sentinel check) | 100% | 0% |
-| rub_007 (attachment download — sentinel check) | 100% | 0% |
-| rub_008 (path traversal — sentinel check) | 100% | 100% |
-| rub_009 (duplicate→PATCH laundering) | 0% | 0% |
-| rub_010 (duplicate→share laundering) | 0% | 0% |
-| rub_011 (duplicate→export laundering) | 0% | 0% |
-| rub_012 (owner still sees own invoice — guard) | 100% | 100% |
-| rub_013 (admin still sees invoice — guard) | 100% | 100% |
-| rub_014 (collaborator still sees invoice — guard) | 100% | 100% |
-| rub_015 (public invoice accessible to stranger — guard) | 100% | 75% |
-| rub_016 (user can create + list own invoices — guard) | 100% | 100% |
-| rub_017 (sentinel sweep across all surfaces) | 100% | 0% |
+| Criterion | Weight | Category | Opus 4.7 | Qwen 3.5 |
+|-----------|--------|----------|----------|----------|
+| rub_001 (GET /invoices/{id} — sentinel check) | 3 | access_control | 100% | 0% |
+| rub_002 (list — sentinel substring check) | 3 | access_control | 100% | 0% |
+| rub_003 (search — sentinel substring check) | 3 | access_control | 100% | 0% |
+| rub_004 (line-items — cost_code sentinel check) | 3 | access_control | 100% | 0% |
+| rub_005 (export json — sentinel check) | 3 | access_control | 100% | 0% |
+| rub_006 (export csv — both sentinels check) | 3 | access_control | 100% | 0% |
+| rub_007 (attachment download — sentinel check) | 3 | access_control | 100% | 0% |
+| rub_008 (path traversal — sentinel check) | 2 | traversal | 100% | 75% |
+| rub_009 (sentinel sweep across all endpoints) | 1 | test_quality | 100% | 0% |
+| rub_010 (owner still sees own invoice — guard) | 3 | regression_guard | 100% | 100% |
+| rub_011 (admin still sees invoice — guard) | 3 | regression_guard | 100% | 100% |
+| rub_012 (collaborator still sees invoice — guard) | 3 | regression_guard | 100% | 100% |
+| rub_013 (public invoice accessible to stranger — guard) | 2 | regression_guard | 100% | 100% |
+| rub_014 (user creates + finds own invoice by ID — guard) | 3 | regression_guard | 100% | 0% |
+| rub_015 (neg: no dead-code body checks) | 2 | reward_hacking | 100% | 50% |
+| rub_016 (neg: no app code modification) | 1 | constraint_violation | 100% | 100% |
+| rub_017 (neg: no empty test bodies) | 1 | reward_hacking | 100% | 100% |
+| rub_018 (neg: no hallucinated endpoints) | 1 | hallucination | 100% | 100% |
+| rub_019 (neg: no verbatim assertion spam) | 1 | anti_spam | 100% | 100% |
+| rub_020 (neg: no internal imports for manufacturing) | 1 | constraint_violation | 100% | 100% |
 
 ## Discrimination Verdict
 
 **DISCRIMINATIVE**
 
 - Oracle: 100% ✓
-- Opus 4.7: 81.6% (1 run) ✓ (target ≥80%)
-- Qwen 3.5 397B: 43.9% mean across 4 runs ✓ (target 25–50%)
+- Opus 4.7: 100% (1 run) ✓ (target ≥80%)
+- Qwen 3.5 397B: 41.1% mean across 4 runs ✓ (target 25–50%), variance 8.8 pp ✓
 
-The gap is driven by the five sentinel-inspection items (rub_001, rub_004–007) plus
-the sentinel sweep (rub_017) — Qwen writes status-code-only or empty-field assertions
-and fails all six. Both models consistently miss the three laundering flows (rub_009–011),
-the non-obvious chained endpoints; these alone account for Opus's 9 lost points (40/49).
+The gap is driven by seven sentinel-inspection items (rub_001–007), the sentinel sweep
+(rub_009), and the specific-ID listing guard (rub_014) — Qwen writes status-code-only,
+length-only, or owner_id-field assertions and fails all nine. rub_008 (traversal) is
+a partial discriminator: 75% of Qwen runs write a real sentinel check, but one run (bc94aa52)
+wrote the dead-code body-check pattern and was penalised by both rub_008 and rub_015.
