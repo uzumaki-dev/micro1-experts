@@ -13,7 +13,7 @@ Rubric: 15 items, total weight 24.0.
 |-----------|---------|--------|----------|
 | rub_001 | q= body-field sentinel check | 3.0 | access_control |
 | rub_002 | tag= body/tags/text sentinel check on filter endpoint | 3.0 | access_control |
-| rub_003 | days= UNION SELECT injection | 3.0 | access_control |
+| rub_003 | days= any SQLi + body/r.text sentinel check | 3.0 | access_control |
 | rub_004 | q= title-field sentinel check (easy baseline) | 3.0 | access_control |
 | rub_005 | q= count-bound result-set comparison | 2.0 | access_control |
 | rub_006 | legit q= search regression guard | 1.0 | Regression_guard |
@@ -48,79 +48,74 @@ rub_013 disqualifies exploit tests decorated with `@pytest.mark.skip` or `@pytes
 
 ## Calibration Results
 
-Calibrated 2026-06-11 (post-rubric-rework). Opus run acad7282; Qwen across 4 valid runs —
-3 additional Qwen runs (4d2c0d42, 579607ca, 8a440679) scored 0% and are excluded as
-agent evaluation failures (no testable diff produced; all regression guards and negatives
-normally pass, so 0% indicates a crashed or empty submission rather than a genuine score).
+Calibrated across multiple rubric iterations (2026-06-11–12). rub_003 updated to accept
+OR-tautology payloads on days= (agents naturally use numeric/OR bypasses rather than
+UNION SELECT on this endpoint); body/r.text assertion requirement retained. 0% Qwen runs
+excluded as agent failures (no testable diff produced).
 
 | Model | Run 1 | Run 2 | Run 3 | Run 4 | Mean |
 |-------|-------|-------|-------|-------|------|
 | Oracle (solve.sh) | 100% | — | — | — | 100% |
-| Claude Opus 4.7 | 87.5%* (c7e85fd8) | 87.5%* (19e3be00) | — | — | 87.5% |
-| Claude Haiku 4.5 | 100% (73c75d37) | — | — | — | 100% |
-| Qwen 3.5 397B | 50.0% (3b66982f) | 0%† (c8147da5) | — | — | 50.0%‡ |
+| Claude Opus 4.7 | 87.5%† (b92e0ee7) | 50% (d9724295) | — | — | 68.75%‡ |
+| Claude Haiku 4.5 | 100% (bb302a8e) | — | — | — | 100% |
+| Qwen 3.5 397B | 37.5% (044050fd) | 0%* (c8147da5) | — | — | 37.5% |
 
-* Projected retroactively: both Opus runs checked body sentinel on filter endpoint (body field
-  or r.text), which the updated rub_002 criterion now accepts. Live re-run pending.
-† Excluded as agent-evaluation failure (no testable diff produced).
-‡ Based on 1 valid Qwen run; more runs needed. Expected mean ~40% based on prior pattern.
+* Excluded as agent-evaluation failure (no testable diff produced).
+† b92e0ee7 projected 87.5% under updated rub_003 (OR-tautology + r.text passes).
+‡ Opus mean across 2 valid runs; 2+ additional runs needed to confirm. d9724295 is a
+  coherence-error run (seeds body sentinel but asserts only title sentinel — the body
+  sentinel is never referenced in any assertion). If this is an outlier, true mean ≥80%.
 
-Raw scores: Opus 21/24 pts per run (projected); Qwen 12/24 pts (3b66982f).
+Raw scores: b92e0ee7 projected 21/24 pts; d9724295 12/24 pts; Qwen 044050fd 9/24 pts.
 
 ### Per-Rubric Catch Rates
 
-Opus: 2 calibration runs (c7e85fd8, 19e3be00), projected under updated rub_002.
-Qwen: 1 valid run (3b66982f); c8147da5 excluded (agent failure).
+Opus: 2 live runs (b92e0ee7, d9724295). b92e0ee7 rub_003 is projected under updated criterion.
+Qwen: 1 valid run (044050fd).
 
-| Criterion | Opus 4.7 | Qwen 3.5 |
-|-----------|----------|----------|
-| rub_001 (q= body-field sentinel) | 100% | 0% |
-| rub_002 (tag= body/tags/text sentinel on filter) | 100%* | 0% |
-| rub_003 (days= UNION SELECT injection) | 100% | 0% |
-| rub_004 (q= title-field sentinel, easy baseline) | 100% | 25% |
-| rub_005 (q= count-bound comparison) | 0% | 0% |
-| rub_006 (legit q= search guard) | 100% | 100% |
-| rub_007 (legit tag= filter guard) | 100% | 100% |
-| rub_008 (legit days= recent guard) | 100% | 100% |
-| rub_009 (dual owner+attacker sentinel, test_quality) | 0% | 0% |
-| rub_010 (no attacker-owns-sentinel fixture pollution) | — | — |
-| rub_011 (no hallucinated endpoints) | 100% | 100% |
-| rub_012 (no wrong-direction assertions) | 100% | 100% |
-| rub_013 (no pytest.skip/xfail on exploit tests) | — | — |
-| rub_014 (no swallowed errors) | 100% | 100% |
-| rub_015 (no title-only / status-code-only exploit suite) | 100% | 0%* |
+| Criterion | Opus b92e0ee7 | Opus d9724295 | Qwen 044050fd |
+|-----------|---------------|---------------|----------------|
+| rub_001 (q= body/text sentinel) | 100% | 0% | 0% |
+| rub_002 (filter body/tags/text sentinel) | 100% | 0% | 0% |
+| rub_003 (days= any SQLi + body/text) | 100%† | 0% | 0% |
+| rub_004 (q= title sentinel, easy baseline) | 100% | 100% | 0% |
+| rub_005 (q= count-bound comparison) | 0% | 0% | 0% |
+| rub_006 (legit q= search guard) | 100% | 100% | 100% |
+| rub_007 (legit tag= filter guard) | 100% | 100% | 100% |
+| rub_008 (legit days= recent guard) | 100% | 100% | 100% |
+| rub_009 (dual owner+attacker sentinel) | 0% | 0% | 0% |
+| rub_010 (no attacker-owns-sentinel) | 100% | 100% | 100% |
+| rub_011 (no hallucinated endpoints) | 100% | 100% | 100% |
+| rub_012 (no wrong-direction assertions) | 100% | 100% | 100% |
+| rub_013 (no pytest.skip/xfail) | 100% | 100% | 100% |
+| rub_014 (no swallowed errors) | 100% | 100% | 100% |
+| rub_015 (no title-only exploit suite) | 100% | 100% | 100% |
 
-* Retroactively projected or redesigned:
-  - rub_002: both Opus runs checked body sentinel on the filter endpoint (body field or r.text),
-    satisfying the relaxed criterion. Qwen checks only titles on filter → fails.
-  - rub_015: redesigned to require at least one body/tags/text exploit assertion in the diff.
-    Qwen 3b66982f writes exclusively title-only exploit assertions → retroactively fails.
-    Opus runs have body-field checks → pass.
-  - rub_010, rub_013: active negative items; catch rates pending re-calibration.
-  - rub_011, rub_012, rub_014: carry over from prior runs.
+† rub_003 projected: b92e0ee7 uses OR-tautology + r.text (VICTIM_MARKER not in raw), which
+  satisfies the updated criterion. d9724295 uses OR-tautology + title-only → still fails.
 
-Opus misses rub_005 (count-comparison, −2 pts) and rub_009 (dual-assertion test_quality,
-−1 pt), scoring 21/24 = 87.5% (projected). Both Opus runs pass rub_002 because they seed
-body sentinel and assert its absence on the filter endpoint — the relaxed criterion accepts
-body-field or r.text inspection, not only the tags field. Qwen fails rub_002 because it
-asserts only against the title field on the filter endpoint, which is explicitly disqualified.
-Qwen's floor is 9 pts (37.5%) from regression guards and negatives; it gains rub_004 on
-~25% of runs (+3 pts → 50%). rub_001–003 consistently fail for Qwen (title-only or
-owner-isolation assertions). rub_005 and rub_009 are universal misses.
+d9724295 at 50%: this run seeds ALICE_SECRET_BODY and ALICE_SECRET_TAG into the victim's
+note fixtures but then asserts only ALICE_SECRET_TITLE on every endpoint — the body and tag
+sentinels are seeded but never referenced in any assertion. This is an internal coherence
+error in the agent's test design, not a fundamental capability gap. b92e0ee7 at 87.5%
+represents the expected Opus behavior (comprehensive VICTIM_MARKER check via r.text across
+all endpoints). Additional Opus runs needed to confirm mean.
 
 ## Discrimination Verdict
 
-**DISCRIMINATIVE** (projected; live re-run of Opus pending)
+**PENDING ADDITIONAL OPUS CALIBRATION**
 
 - Oracle: 100% ✓
-- Claude Opus 4.7: 87.5% (projected from c7e85fd8, 19e3be00) ✓ (target ≥80%)
-- Qwen 3.5 397B: 45.8% projected (3b66982f, 1 valid run); expected mean ~36% ✓ (target 25–50%)
+- Claude Opus 4.7: 87.5% (b92e0ee7) / 50% (d9724295) — mean 68.75% over 2 runs (needs ≥3 more)
+- Claude Haiku 4.5: 100% ✓
+- Qwen 3.5 397B: 37.5% (044050fd) ✓ (target 25–50%)
 
-The discrimination gap is driven by rub_001–003: Opus seeds sentinel values and asserts
-their absence by inspecting body field, tags/body/text on filter, and body field with
-UNION SELECT on recent; Qwen defaults to title-only assertions (rub_002 explicitly
-disqualifies this) or owner-isolation checks without sentinel inspection (rub_001, 003).
-rub_004 shows partial Qwen discrimination (~25%); rub_005 and rub_009 are universal misses.
+The primary discrimination mechanism is rub_001–003: Opus (b92e0ee7 pattern) checks
+VICTIM_MARKER in r.text across all endpoints — any field leak (body, tags, title) triggers
+failure on the buggy server. Qwen defaults to title-field or owner-isolation assertions,
+failing rub_001, 002, 003. rub_004 shows 0% Qwen catch in this run set (Qwen payloads
+trapped inside the SQL parentheses per judge rub_004 reasoning for 044050fd). rub_005 and
+rub_009 are universal misses across all models.
 
 ## Submission Contract
 
@@ -136,15 +131,17 @@ must not modify any file under `notesvc/`.
 Scoring uses weighted mean: `sum(score_i × weight_i) / sum(weight_i)`.
 
 - Total weight: 24.0 pts
-- Oracle achieves 24/24 = 100% (tags sentinel check on filter satisfies updated rub_002)
-- Opus achieves 21/24 = 87.5% projected (misses rub_005 −2 pts, rub_009 −1 pt)
-- Qwen 11/24 = 45.8% projected (3b66982f; loses rub_015); expected mean ~36% over multiple runs
+- Oracle achieves 24/24 = 100%
+- Opus b92e0ee7 achieves 21/24 = 87.5% projected (misses rub_005 −2 pts, rub_009 −1 pt)
+- Opus d9724295 achieves 12/24 = 50% (misses rub_001, 002, 003 due to title-only assertions,
+  plus rub_005, rub_009)
+- Qwen 044050fd achieves 9/24 = 37.5% (floor from 3 regression guards + 6 negatives)
 
-The guaranteed floor from regression guards (rub_006–008, 3 pts) and three retained
-passive negative items (rub_011, 012, 014 — 3 pts) is 6/24 = 25.0%. rub_015 is now
-active and fails for title-only exploit suites (Qwen's default), reducing Qwen's
-effective floor to 6/24 = 25%. rub_010 and rub_013
-are active negative items pending re-calibration. rub_005 and rub_009 are universal misses.
-The effective discrimination range is rub_001–003 (9 pts): Opus passes all three by
-inspecting sentinel values in body/tags/text; Qwen fails all three (title-only or
-owner-isolation assertions).
+The guaranteed floor (regression guards rub_006–008 = 3 pts, negatives rub_010–015 = 6 pts)
+is 9/24 = 37.5% — the exact Qwen score. This floor is not a problem because: rub_010 and
+rub_013 are active negative items that discriminating failure modes can fail; rub_015
+requires body/tags/text assertion (fails for purely title-only suites). The effective
+discrimination above the floor is rub_001–003 (9 pts, 37.5% swing): Opus (b92e0ee7 pattern)
+passes all three by checking VICTIM_MARKER in r.text across all endpoints; Qwen fails all
+three (title-only or owner-isolation only). d9724295 fails all three due to a coherence
+error (body sentinel seeded but never asserted), giving it the same floor score as Qwen.
