@@ -1,72 +1,79 @@
-FROM python:3.12-slim
+# === BEGIN realm base (do not edit) ===
+FROM --platform=linux/amd64 node:24-bookworm-slim
 
-ENV PIP_NO_CACHE_DIR=1 PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+ENV DEBIAN_FRONTEND=noninteractive \
+    LC_ALL=C.UTF-8 \
+    LANG=C.UTF-8 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-RUN groupadd -r user && useradd -r -g user -u 1000 -m -d /home/user user \
- && apt-get update \
- && apt-get install -y --no-install-recommends git curl ca-certificates \
+# Core tooling present in every task image. Node.js comes from the base image.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+        ca-certificates curl wget \
+        git patch \
+        ripgrep fd-find jq less file unzip \
+        vim sudo procps \
  && rm -rf /var/lib/apt/lists/* \
- && curl -LsSf https://astral.sh/uv/install.sh | UV_INSTALL_DIR=/usr/local/bin sh \
- && chmod 755 /usr/local/bin/uv /usr/local/bin/uvx
+ && ln -sf /usr/bin/fdfind /usr/local/bin/fd
 
-# Pre-install Python 3.13 during build (internet available); runtime has no internet
-ENV UV_PYTHON_INSTALL_DIR=/opt/uv-python
-RUN mkdir -p /opt/uv-python /opt/uv-cache \
- && uv python install --install-dir /opt/uv-python 3.13 \
- && chmod -R a+rX /opt/uv-python /opt/uv-cache
+# Python (default language, uv-managed; uv also drives dependency installs).
+ENV UV_PYTHON_INSTALL_DIR=/opt/python
+RUN curl -LsSf https://astral.sh/uv/0.11.13/install.sh | UV_INSTALL_DIR=/usr/local/bin sh \
+ && uv python install 3.13 \
+ && ln -sf "$(uv python find 3.13)" /usr/local/bin/python3 \
+ && ln -sf /usr/local/bin/python3 /usr/local/bin/python
 
-ENV UV_CACHE_DIR=/opt/uv-cache \
-    UV_TOOL_DIR=/opt/uv-tools \
-    UV_TOOL_BIN_DIR=/opt/uv-tools/bin \
-    UV_PYTHON=3.13 \
-    UV_PYTHON_PREFERENCE=only-managed
+RUN mkdir -p /app
+# === END realm base ===
+
+# === uv tool directory (REQUIRED for harbor-rewardkit) ===
+# The verifier runs `uvx harbor-rewardkit` as the `node` user (UID 1000).
+# Without this, uv can't write to its cache and the verifier exits rc=1.
 RUN mkdir -p /opt/uv-tools/bin \
- && chown -R user:user /opt/uv-cache /opt/uv-tools
+ && chown -R node:node /opt/uv-tools
+
+ENV UV_TOOL_DIR=/opt/uv-tools \
+    UV_TOOL_BIN_DIR=/opt/uv-tools/bin \
+    PATH=/opt/uv-tools/bin:${PATH}
+
+# === Harbor runtime mount points ===
+RUN mkdir -p /solution /tests /logs/verifier /logs/artifacts \
+ && chown -R node:node /solution /tests /logs
 
 WORKDIR /repo
 
+# === substrate setup ===
 COPY requirements.txt /repo/requirements.txt
-RUN pip install -r /repo/requirements.txt
+COPY expensesvc/      /repo/expensesvc/
+COPY tests/           /repo/tests/
+COPY pytest.ini       /repo/pytest.ini
 
-# Copy the buggy substrate and smoke test
-COPY expensesvc/ /repo/expensesvc/
-COPY tests/ /repo/tests/
-COPY pytest.ini /repo/pytest.ini
+# Install Python dependencies into a venv owned by the node user.
+RUN uv venv /opt/venv \
+ && uv pip install -p /opt/venv -r /repo/requirements.txt \
+ && chown -R node:node /opt/venv
 
-# Anti-cheating: fresh git init, single commit, no remote.
-# Dates are pinned so the commit SHA is stable across rebuilds.
-# __pycache__ dirs are purged before git add so local bytecode does not affect the SHA.
-RUN find . -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null; \
-    find . -name '*.pyc' -delete 2>/dev/null; \
+ENV VIRTUAL_ENV=/opt/venv \
+    PATH=/opt/venv/bin:${PATH}
+
+# Squash into one reproducible commit (anti-cheating).
+# Fixed identity + dates → identical SHA on every build.
+RUN find /repo -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null || true; \
+    find /repo -name '*.pyc' -delete 2>/dev/null || true; \
     git init -q \
- && git config user.email build@aspen.local \
- && git config user.name build \
+ && git config user.email "task@local" \
+ && git config user.name "task" \
  && git add -A \
- && GIT_AUTHOR_DATE="2025-01-01T00:00:00Z" GIT_COMMITTER_DATE="2025-01-01T00:00:00Z" \
-    git commit -q -m "buggy starter (idor v1)"
+ && GIT_AUTHOR_NAME=task GIT_AUTHOR_EMAIL=task@local \
+    GIT_COMMITTER_NAME=task GIT_COMMITTER_EMAIL=task@local \
+    GIT_AUTHOR_DATE="2025-01-01T00:00:00Z" GIT_COMMITTER_DATE="2025-01-01T00:00:00Z" \
+    git commit -qm "buggy starter (idor v1)" \
+ && chown -R node:node /repo
 
-RUN chown -R user:user /repo
-USER user
+USER node
+WORKDIR /repo
 
-# Pre-warm harbor-rewardkit while build has internet; runtime is offline
-RUN uvx --python 3.13 --from 'harbor-rewardkit[all]' rewardkit --help 2>&1 || true
-
-# Pre-install the claude-code judge backend while internet is available
-RUN curl -fsSL https://claude.ai/install.sh | bash
-
-USER root
-# Stub curl for claude.ai so ensure_installed() won't fail at offline runtime:
-# the script does `curl -fsSL https://claude.ai/install.sh | bash`; our stub
-# outputs nothing + exits 0, bash runs empty input + exits 0, then
-# `claude --version` succeeds against the pre-installed binary.
-RUN mv /usr/bin/curl /usr/bin/real_curl \
- && printf '#!/bin/sh\nif echo "$*" | grep -q "claude.ai"; then exit 0; fi\nexec /usr/bin/real_curl "$@"\n' \
-      > /usr/bin/curl \
- && chmod +x /usr/bin/curl
-USER user
-
-ENV PATH="/home/user/.local/bin:$PATH"
 ENV PYTHONPATH=/repo
-ENV UV_OFFLINE=1
 
-CMD ["bash"]
+CMD ["sleep", "infinity"]

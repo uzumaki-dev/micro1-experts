@@ -1,0 +1,31 @@
+{
+  "realm": "testgen",
+  "instance": "aspen__gold_sample_py_000",
+  "overall": "pass",
+  "checks": [
+    {
+      "rule": "testgen/verifiable",
+      "severity": "WARNING",
+      "status": "fail",
+      "message": "testgen/verifiable: The instruction describes a 'leak' without specifying what data constitutes a leak or how to programmatically detect it, requiring subjective judgment.",
+      "fix": null,
+      "path": null
+    },
+    {
+      "rule": "testgen/well-specified",
+      "severity": "WARNING",
+      "status": "fail",
+      "message": "testgen/well-specified: The instruction lacks specific details on which API endpoints are affected, what data is exfiltrated, or the expected structure of the test suite beyond its location.",
+      "fix": null,
+      "path": null
+    },
+    {
+      "rule": "testgen/solvable",
+      "severity": "WARNING",
+      "status": "fail",
+      "message": "testgen/solvable: Identifying the specific API endpoints and data exfiltration vectors without further information would require significant investigative work, likely exceeding a few hours.",
+      "fix": null,
+      "path": null
+    }
+  ]
+}

@@ -14,7 +14,7 @@ cleanup_and_reward() {
         exit "$rc"
     fi
     python3 - "$rc" "$TEST_LOG" <<'PY' >/logs/verifier/reward.json 2>/dev/null || \
-        echo '{"score":0.0}' > /logs/verifier/reward.json
+        echo '{"score":0.0,"reward":0.0}' > /logs/verifier/reward.json
 import json, sys
 rc = int(sys.argv[1])
 log_path = sys.argv[2] if len(sys.argv) > 2 else ""
@@ -24,7 +24,7 @@ try:
         tail = f.read()[-4000:]
 except Exception:
     tail = ""
-json.dump({"score": 0.0}, sys.stdout)
+json.dump({"score": 0.0, "reward": 0.0}, sys.stdout)
 with open("/logs/verifier/fallback_error.txt", "w") as f:
     f.write(f"verifier early-exit rc={rc}\n{tail}")
 PY

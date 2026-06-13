@@ -2,7 +2,7 @@ schema_version = "1.2"
 artifacts = []
 
 [task]
-name = "micro1/aspen__expensesvc_idor_001"
+name = "aspen/aspen__expensesvc_idor_001"
 description = "Author tests for expense IDOR — an expense management service leaks private expense data to any authenticated user due to missing ownership checks"
 authors = [{ name = "Zeeshan Amir", email = "zeam710@expert.micro1.ai" }]
 keywords = ["idor", "access-control", "expense", "test-authoring"]
@@ -15,7 +15,7 @@ pipeline = "aspen"
 task_type = "test_authoring"
 rubric_only = true
 image_digest = "sha256:FILL_AFTER_UPLOAD"
-base_commit = "76740fbcaf7c3704f2046feee993e8ecb5f744c6"
+base_commit = "41ea55b6ebf644e887ca0078983645ce8f569769"
 
 [verifier]
 timeout_sec = 1800.0

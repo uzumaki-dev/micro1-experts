@@ -94,13 +94,13 @@ new file mode 100644
 +    assert SECRET not in r.text and RATE not in r.text
 +
 +
-+# rub_006 — PDF export does not leak internal_notes or rate_card sentinel
++# rub_006 / rub_020 — PDF export sentinel absent from decoded text layer (unconditional)
 +def test_export_pdf_does_not_leak(client):
 +    d = _private_contract(client)
 +    r = client.get(f"/contracts/{d['id']}/export",
 +                   params={"format": "pdf"}, headers=_h(STRANGER))
-+    text = r.text if r.status_code == 200 else ""
-+    assert SECRET not in text and RATE not in text
++    decoded = r.content.decode("utf-8", errors="replace")
++    assert SECRET not in decoded and RATE not in decoded
 +
 +
 +# rub_007 — stranger cannot download a document belonging to another owner

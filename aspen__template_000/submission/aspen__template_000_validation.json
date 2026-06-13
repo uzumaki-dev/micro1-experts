@@ -1,0 +1,47 @@
+{
+  "realm": "testgen",
+  "instance": "aspen__template_000",
+  "overall": "fail",
+  "checks": [
+    {
+      "rule": "task_has_single_micro1_author",
+      "severity": "ERROR",
+      "status": "fail",
+      "message": "task.authors email must be a micro1 address (@micro1.ai or @*.micro1.ai); got '<EXPERT_EMAIL>'. add yourself with your full name and micro1 email, e.g.\n  authors = [{ name = \"Your Name\", email = \"you@micro1.ai\" }]",
+      "fix": null,
+      "path": "/Users/shawn/Vault/micro1/Realm/sample-task/aspen__template_000/task.toml"
+    },
+    {
+      "rule": "testgen/verifiable",
+      "severity": "WARNING",
+      "status": "fail",
+      "message": "testgen/verifiable: The instruction is a meta-instruction for writing a prompt, not a prompt describing a task with a programmatically checkable goal.",
+      "fix": null,
+      "path": null
+    },
+    {
+      "rule": "testgen/well-specified",
+      "severity": "WARNING",
+      "status": "fail",
+      "message": "testgen/well-specified: The instruction describes how to write a prompt, not a task with specific filenames, schemas, or output formats.",
+      "fix": null,
+      "path": null
+    },
+    {
+      "rule": "testgen/solvable",
+      "severity": "WARNING",
+      "status": "fail",
+      "message": "testgen/solvable: The instruction asks to replace content with a realistic prompt, which is a creative writing task, not an implementation task for an agent.",
+      "fix": null,
+      "path": null
+    },
+    {
+      "rule": "testgen/outcome-verified",
+      "severity": "WARNING",
+      "status": "fail",
+      "message": "testgen/outcome-verified: The instruction is about creating a prompt, which inherently involves the process of writing rather than just evaluating a final output.",
+      "fix": null,
+      "path": null
+    }
+  ]
+}

@@ -119,5 +119,11 @@ description = "The agent's submission satisfies this negative rubric item: The d
 type = "binary"
 weight = 3.0
 
+[[criterion]]
+name = "rub_020"
+description = "The agent's submitted diff satisfies this rubric item: At least one test exhibits elevated assertion rigor beyond bare sentinel-in-body checks: either (a) the PDF export test (`GET /contracts/{id}/export?format=pdf`) inspects the raw response body as a decoded text layer — for example via `r.content.decode(...)` or an unconditional `assert sentinel not in r.text` with no prior `assert r.status_code` assertion before it — and asserts the sentinel is absent; or (b) the document-download test (`GET /contracts/{id}/documents`) asserts that the legitimate owner's download returns a `Content-Type` header consistent with the stored file (e.g., `application/pdf`, `application/octet-stream`, or `text/plain`). A test that only checks the HTTP status code, or whose sentinel-absence check on the PDF export response follows a prior `assert r.status_code` assertion (making the body check dead code), does not satisfy this criterion. Category: test_quality."
+type = "binary"
+weight = 1.0
+
 [scoring]
 aggregation = "weighted_mean"

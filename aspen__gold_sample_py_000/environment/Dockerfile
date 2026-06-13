@@ -68,5 +68,3 @@ USER node
 WORKDIR /repo
 
 ENV PYTHONPATH=/repo
-
-CMD ["sleep", "infinity"]

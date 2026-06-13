@@ -8,79 +8,79 @@ prompt_template = "prompt.md"
 
 [[criterion]]
 name = "rub_001"
-description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-admin GET /tasks/{id} response does not contain the private sandbox_config fields (gold_patch_b64, task_config_b64, test_patch_b64, hidden_seed_files). Category: access_control."
+description = "Non-admin GET /tasks/{id} does not leak sandbox_config private fields (gold_patch_b64, task_config_b64, test_patch_b64, hidden_seed_files). Category: access_control."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
 name = "rub_002"
-description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-admin GET /coding-tasks (list endpoint) response redacts the private sandbox_config fields from every row. Category: access_control."
+description = "Non-admin GET /coding-tasks (list) redacts sandbox_config fields from every row. Category: access_control."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
 name = "rub_003"
-description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-admin GET /tasks/{id}/files/{name} returns a 4xx for files that appear in sandbox_config.hidden_seed_files (per-task hidden-name awareness, not just well-known names). Category: access_control."
+description = "Non-admin GET /tasks/{id}/files/{name} returns 4xx for files in sandbox_config.hidden_seed_files (per-task hidden-name awareness). Category: access_control."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
 name = "rub_004"
-description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-admin GET /runs/{id}/artifacts (and /artifacts-zip) returns a 4xx when the run's model is a *_validation mode (e.g., gold_patch_validation, golden_repo_validation), recognizing validation runs as private. Category: access_control."
+description = "Non-admin GET /runs/{id}/artifacts and /artifacts-zip return 4xx when run mode is a *_validation variant. Category: access_control."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
 name = "rub_005"
-description = "The agent's submitted diff satisfies this rubric item: A test asserts that a non-admin GET /runs/{id}/artifacts (and /artifacts-zip) returns a 4xx when the run's created_by does not match the calling participant's user_id (cross-author run privacy). Category: ownership."
+description = "Non-admin GET /runs/{id}/artifacts and /artifacts-zip return 4xx when run's created_by does not match caller's user_id. Category: ownership."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
 name = "rub_006"
-description = "The agent's submitted diff satisfies this rubric item: A test exercises the duplicate-then-PATCH laundering flow: a non-admin duplicates a task, then PATCHes the clone's name; the test asserts the PATCH response does not leak the inherited private sandbox_config fields. Category: redaction."
+description = "Duplicate-then-PATCH laundering: non-admin duplicates a task, PATCHes the clone's name — PATCH response does not leak inherited private sandbox_config fields. Category: redaction."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
 name = "rub_007"
-description = "The agent's submitted diff satisfies this rubric item: A test exercises the duplicate-then-share laundering flow: a non-admin duplicates a task, then calls /tasks/{id}/share on the clone; the test asserts the share response does not leak the inherited private fields. Category: redaction."
+description = "Duplicate-then-share laundering: non-admin duplicates a task, calls /tasks/{id}/share on clone — share response does not leak inherited private fields. Category: redaction."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
 name = "rub_008"
-description = "The agent's submitted diff satisfies this rubric item: A test exercises the duplicate-then-export laundering flow: a non-admin duplicates a task, then calls GET /tasks/{id}/export on the clone; the test asserts the export response does not leak the inherited private fields. Category: redaction."
+description = "Duplicate-then-export laundering: non-admin duplicates a task, calls GET /tasks/{id}/export on clone — export response does not leak inherited private fields. Category: redaction."
 type = "binary"
 weight = 3.0
 
 [[criterion]]
 name = "rub_009"
-description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that an admin GET /coding-tasks (list endpoint) STILL returns rows containing the private sandbox_config fields (gold_patch_b64 visible to admin). Catches over-eager fixes that scrub the list endpoint unconditionally. Category: regression_guard."
+description = "Anti-overblock: admin GET /coding-tasks list STILL returns rows with private sandbox_config fields visible. Category: regression_guard."
 type = "binary"
 weight = 2.0
 
 [[criterion]]
 name = "rub_010"
-description = "The agent's submitted diff satisfies this rubric item: Anti-overblock tests assert that a non-admin participant CAN still call /tasks/{id}/duplicate, /tasks/{id}/share, and /tasks/{id}/export on their own tasks (or shared tasks). Category: regression_guard."
+description = "Anti-overblock: non-admin can still /tasks/{id}/duplicate, share, and export on their own (or shared) tasks. Category: regression_guard."
 type = "binary"
 weight = 2.0
 
 [[criterion]]
 name = "rub_011"
-description = "The agent's submitted diff satisfies this rubric item: An anti-overblock test asserts that a non-admin GET /tasks/{id}/files/public_readme.md (or the equivalent public seed file) still returns 200 with the correct content. Category: regression_guard."
+description = "Anti-overblock: non-admin GET /tasks/{id}/files/public_readme.md (or equivalent public seed file) still returns 200 with correct content. Category: regression_guard."
 type = "binary"
 weight = 2.0
 
 [[criterion]]
 name = "rub_012"
-description = "The agent's submitted diff satisfies this rubric item (Negative): A test asserts that a non-admin cannot use path traversal (e.g., .. segments) in /tasks/{id}/files/{path} to reach .golden/ or other private subdirectories. If the submitted diff fails to include this constraint or includes tests that violate it, this criterion is not satisfied. Category: constraint_violation."
+description = "[NEGATIVE] Non-admin cannot use path traversal (.. segments) in /tasks/{id}/files/{path} to reach .golden/ or other private subdirectories. Category: constraint_violation."
 type = "binary"
 weight = 2.0
 
 [[criterion]]
 name = "rub_013"
-description = "The agent's submitted diff satisfies this rubric item (Negative): Tests seed sentinel marker bytes into private artifacts (gold patch, hidden seed files, validation run outputs) and assert those marker bytes do not appear in any response accessible to non-admin users. If the diff fails to include this or includes tests that leak the markers, this criterion is not satisfied. Category: reward_hacking."
+description = "[NEGATIVE] Tests seed sentinel markers into private artifacts (gold patch, hidden files, validation run outputs) and assert they never appear in non-admin responses. Category: reward_hacking."
 type = "binary"
 weight = 1.0
 
